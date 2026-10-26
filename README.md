@@ -29,22 +29,30 @@ Vecsés, Fő út 330.):
 2. A cég képviselője a TestFlightos appból rendel → a panel csenget → elfogadod egy elkészülési
    idővel → a telefonon megjelenik az állapot és az értesítés → léptetsz a kiszállításig.
 
-### iOS app feltöltése TestFlightra
+### iOS app – TestFlight
+
+**Állapot:** az App Store Connectben `Erdens Kebab` (azonosító `6827152968`, bundle `hu.erdenskebab.app`),
+a TestFlight belső csoportjában (*Internal*) telepíthető. A push értesítések működnek (APNs kulcs
+`WJW6L88657` az expo.dev-en, a projekt iOS credentials alatt).
+
+Hitelesítés **Apple-jelszó nélkül**, App Store Connect API-kulccsal (`AuthKey_QV87XFFPUQ.p8` a
+Letöltések mappában – ne töröld). Új verzió kiadása:
 
 ```bash
-npx testflight
+export EXPO_ASC_API_KEY_PATH="$HOME/Downloads/AuthKey_QV87XFFPUQ.p8" EXPO_ASC_KEY_ID=QV87XFFPUQ \
+  EXPO_ASC_ISSUER_ID=7e0fbbf3-8f76-4633-9b10-ba17223145cd EXPO_APPLE_TEAM_ID=8GZ6FU7RBK \
+  EXPO_APPLE_TEAM_TYPE=INDIVIDUAL EXPO_NO_CAPABILITY_SYNC=1 EXPO_NO_KEYCHAIN=1
+npx eas-cli@latest build -p ios --profile production     # felhős build, a buildszám magától nő
+npx eas-cli@latest submit -p ios --latest --profile production --non-interactive
 ```
 
-Végigvezet mindenen: Expo fiók (ingyenes is jó), EAS projekt, Apple ID + kétlépcsős azonosítás,
-aláírás, felhős build az `eas.json` `production` profiljával (ebben van a szerver címe), majd feltöltés
-az App Store Connectbe. Ha rákérdez a push értesítésekre, válaszd az igent; ha kimaradt:
-`npx eas-cli@latest credentials -p ios` → Push Notifications.
+Ha a build a push beállítására kérdez rá, válaszd a **No**-t (a kulcs már az Expón van). Az Apple a
+feltöltés után 5–10 perc alatt dolgozza fel, utána a belső tesztelők automatikusan megkapják.
 
 - **Belső tesztelők** (App Store Connect csapattagok): Apple ellenőrzés nélkül, azonnal kapják.
-- **Külső tesztelők** (pl. a cég munkatársa e-mailben vagy nyilvános linkkel): az első buildet az Apple
-  béta-ellenőrzésen nézi át (általában kb. 1 nap). Mivel az app egy valódi étterem nevét viseli,
-  a megjegyzésben érdemes jelezni, hogy a megbízásukra készül.
-- **Új verzió:** újra `npx testflight` – a buildszám automatikusan nő.
+- **Külső tesztelők** (pl. a cég munkatársa e-mailben vagy nyilvános linkkel): külső csoport kell, és
+  az első buildet az Apple béta-ellenőrzésen nézi át (általában kb. 1 nap). Mivel az app egy valódi
+  étterem nevét viseli, a megjegyzésben érdemes jelezni, hogy a megbízásukra készül.
 
 Androidra (opcionális) telepíthető APK: `npx eas-cli@latest build -p android --profile preview`.
 
