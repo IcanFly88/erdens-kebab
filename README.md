@@ -8,6 +8,46 @@ Vecsés, Fő út 330.):
 - **Éttermi panel** (`server/panel/`, böngészőben/tableten fut) – bejövő rendelések kezelése
 - **Push értesítések** – a vendég értesítést kap minden státuszváltásról
 
+## Demó (jelenlegi állapot)
+
+| | Cím |
+| --- | --- |
+| Szerver / API | https://erdens-kebab-demo.onrender.com |
+| Éttermi panel | https://erdens-kebab-demo.onrender.com/panel/ |
+
+- **Tárhely:** Render ingyenes csomag, Frankfurt (`render.yaml`, `Dockerfile`). A GitHub `main` ágra
+  történő minden push automatikusan újratelepíti. Ha egy commit nem érinti a szervert, írd az
+  üzenetébe: `[skip render]`.
+- **Korlátok:** 15 perc forgalom nélkül a szerver elalszik, az ébredés kb. 1 perc; újraindításkor és
+  újratelepítéskor a rendelések törlődnek. Az app induláskor felkelti a szervert, rendelésnél kivárja
+  az ébredést, a nyitva hagyott panel pedig ébren tartja.
+- **Panel PIN-ek:** Render → `erdens-kebab-demo` → Environment (`PANEL_PIN_MONOR`, `PANEL_PIN_VECSES`).
+
+### A demó menete
+
+1. Pár perccel előtte nyisd meg a panelt laptopon vagy tableten, lépj be, és koppints a „Hang” gombra.
+2. A cég képviselője a TestFlightos appból rendel → a panel csenget → elfogadod egy elkészülési
+   idővel → a telefonon megjelenik az állapot és az értesítés → léptetsz a kiszállításig.
+
+### iOS app feltöltése TestFlightra
+
+```bash
+npx testflight
+```
+
+Végigvezet mindenen: Expo fiók (ingyenes is jó), EAS projekt, Apple ID + kétlépcsős azonosítás,
+aláírás, felhős build az `eas.json` `production` profiljával (ebben van a szerver címe), majd feltöltés
+az App Store Connectbe. Ha rákérdez a push értesítésekre, válaszd az igent; ha kimaradt:
+`npx eas-cli@latest credentials -p ios` → Push Notifications.
+
+- **Belső tesztelők** (App Store Connect csapattagok): Apple ellenőrzés nélkül, azonnal kapják.
+- **Külső tesztelők** (pl. a cég munkatársa e-mailben vagy nyilvános linkkel): az első buildet az Apple
+  béta-ellenőrzésen nézi át (általában kb. 1 nap). Mivel az app egy valódi étterem nevét viseli,
+  a megjegyzésben érdemes jelezni, hogy a megbízásukra készül.
+- **Új verzió:** újra `npx testflight` – a buildszám automatikusan nő.
+
+Androidra (opcionális) telepíthető APK: `npx eas-cli@latest build -p android --profile preview`.
+
 ## Gyors indítás (fejlesztés)
 
 Két terminálban:
@@ -65,8 +105,9 @@ Ezután az app automatikusan regisztrálja a push tokent a rendelés követések
 
 ### Szerver
 
-Bármilyen Node 22+ futtatására alkalmas gépen fut (VPS, Render, Fly.io, Railway); az SQLite-hoz
-**tartós tárhely** kell. HTTPS-hez tegyél elé reverse proxyt (pl. Caddy).
+A `Dockerfile` bármilyen Docker tárhelyen fut (Render, Railway, Fly.io, VPS). Élesben fizetős csomag
+kell **tartós tárhellyel** (Renderen: disk a `/data` útvonalra), különben újraindításkor elvesznek a
+rendelések. Felhőben állítsd be: `NODE_ENV=production`, `TRUST_PROXY=1` (proxy mögött a valódi IP-hez).
 
 | Környezeti változó | Leírás |
 | --- | --- |

@@ -7,13 +7,13 @@
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://SZERVER-CIM-HAMAROSAN.up.railway.app"
+        "EXPO_PUBLIC_API_URL": "https://erdens-kebab-demo.onrender.com"
       }
     },
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://SZERVER-CIM-HAMAROSAN.up.railway.app"
+        "EXPO_PUBLIC_API_URL": "https://erdens-kebab-demo.onrender.com"
       }
     }
   },
