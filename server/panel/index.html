@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="hu">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0d0d0d" />
+    <title>Erdens Kebab · Rendelésfogadó</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet" />
+    <link rel="stylesheet" href="panel.css" />
+  </head>
+  <body>
+    <section id="login" class="login" hidden>
+      <form id="login-form" class="login-card">
+        <div class="brand">ERDEN'S KEBAB</div>
+        <h1>Rendelésfogadó</h1>
+        <label>
+          Étterem
+          <select name="locationId">
+            <option value="monor">Monor – Kiss Ernő u. 1.</option>
+            <option value="vecses">Vecsés – Fő út 330.</option>
+          </select>
+        </label>
+        <label>
+          PIN kód
+          <input name="pin" type="password" inputmode="numeric" autocomplete="current-password" required />
+        </label>
+        <p class="error" id="login-error" hidden></p>
+        <button class="btn primary big" type="submit">Belépés</button>
+      </form>
+    </section>
+
+    <section id="app" hidden>
+      <header class="topbar">
+        <div class="brand">ERDEN'S KEBAB</div>
+        <div class="location" id="location-name"></div>
+        <div class="spacer"></div>
+        <span class="conn" id="conn">Kapcsolódás…</span>
+        <label class="switch">
+          <input type="checkbox" id="accepting" />
+          <span class="track"><span class="thumb"></span></span>
+          <span>Rendelésfogadás</span>
+        </label>
+        <button class="btn ghost" id="sound-btn" type="button">🔔 Hang be</button>
+        <button class="btn ghost" id="logout-btn" type="button">Kilépés</button>
+      </header>
+
+      <div class="banner" id="paused-banner" hidden>
+        Az online rendelésfogadás szünetel – a vendégek most nem tudnak rendelni az appban.
+      </div>
+      <div class="banner closed" id="closed-banner" hidden>
+        Nyitvatartási időn kívül vagyunk – csak előrendelések érkezhetnek.
+      </div>
+
+      <main class="board">
+        <section class="column">
+          <h2>Új <span class="count" id="count-new"></span></h2>
+          <div id="col-new" class="cards"></div>
+        </section>
+        <section class="column">
+          <h2>Készül <span class="count" id="count-prep"></span></h2>
+          <div id="col-prep" class="cards"></div>
+        </section>
+        <section class="column">
+          <h2>Kiadva <span class="count" id="count-out"></span></h2>
+          <div id="col-out" class="cards"></div>
+        </section>
+      </main>
+
+      <details class="history">
+        <summary>Lezárt rendelések (utolsó 24 óra) <span id="count-done"></span></summary>
+        <div id="col-done" class="history-list"></div>
+      </details>
+    </section>
+
+    <dialog id="reject-dialog">
+      <form method="dialog" id="reject-form">
+        <h2>Rendelés elutasítása <span id="reject-number"></span></h2>
+        <p class="muted">A vendég értesítést kap az okkal együtt.</p>
+        <div class="reasons">
+          <label><input type="radio" name="reason" value="Most túl sok a rendelés, nem tudjuk időben teljesíteni." checked /> Túl sok rendelés</label>
+          <label><input type="radio" name="reason" value="Sajnos elfogyott valamelyik rendelt termék." /> Elfogyott egy termék</label>
+          <label><input type="radio" name="reason" value="Erre a címre most nem tudunk szállítani." /> Nem tudunk oda szállítani</label>
+          <label><input type="radio" name="reason" value="Hamarosan zárunk, már nem tudjuk elkészíteni." /> Hamarosan zárunk</label>
+          <label><input type="radio" name="reason" value="other" /> Egyéb:</label>
+          <textarea name="other" rows="2" maxlength="200" placeholder="Írd le röviden az okát"></textarea>
+        </div>
+        <div class="dialog-actions">
+          <button class="btn ghost" value="cancel" type="submit">Mégse</button>
+          <button class="btn danger" value="confirm" type="submit">Elutasítás</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div id="toast" class="toast" hidden></div>
+    <script src="panel.js"></script>
+  </body>
+</html>

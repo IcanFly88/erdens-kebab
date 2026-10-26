@@ -1,0 +1,492 @@
+:root {
+  --brand: #8d7250;
+  --brand-dark: #6f5838;
+  --brand-soft: #f5efe7;
+  --ink: #0d0d0d;
+  --text: #1b1b1b;
+  --muted: #6e6a65;
+  --border: #ece7e0;
+  --bg: #f7f5f2;
+  --card: #ffffff;
+  --success: #2f8f5b;
+  --success-soft: #e7f4ec;
+  --danger: #c2410c;
+  --danger-soft: #fdeee7;
+  --radius: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Montserrat, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.brand {
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+/* --- gombok --- */
+.btn {
+  font: inherit;
+  font-weight: 600;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  min-height: 44px;
+  padding: 0 16px;
+  cursor: pointer;
+  background: var(--card);
+  color: var(--text);
+  transition: transform 0.05s, opacity 0.15s;
+}
+.btn:active {
+  transform: scale(0.98);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: progress;
+}
+.btn.primary {
+  background: var(--brand);
+  color: #fff;
+}
+.btn.dark {
+  background: var(--ink);
+  color: #fff;
+}
+.btn.ghost {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.25);
+  color: inherit;
+}
+.btn.outline {
+  border-color: var(--border);
+}
+.btn.danger {
+  background: var(--danger);
+  color: #fff;
+}
+.btn.link {
+  background: none;
+  color: var(--danger);
+  min-height: 36px;
+  padding: 0 6px;
+}
+.btn.big {
+  width: 100%;
+  min-height: 52px;
+  font-size: 16px;
+}
+
+/* --- belépés --- */
+.login {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: var(--ink);
+  padding: 16px;
+}
+.login-card {
+  width: min(380px, 100%);
+  background: var(--card);
+  border-radius: 20px;
+  padding: 28px;
+  display: grid;
+  gap: 16px;
+}
+.login-card .brand {
+  color: var(--brand);
+}
+.login-card h1 {
+  margin: 0 0 4px;
+  font-size: 24px;
+}
+.login-card label {
+  display: grid;
+  gap: 6px;
+  font-weight: 600;
+  color: var(--muted);
+  font-size: 13px;
+}
+.login-card select,
+.login-card input {
+  font: inherit;
+  font-size: 16px;
+  min-height: 48px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  padding: 0 12px;
+  color: var(--text);
+}
+.error {
+  color: var(--danger);
+  margin: 0;
+  font-weight: 600;
+}
+
+/* --- fejléc --- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 16px;
+  background: var(--ink);
+  color: #fff;
+}
+.topbar .brand {
+  color: var(--brand);
+}
+.location {
+  font-weight: 700;
+}
+.spacer {
+  flex: 1;
+}
+.conn {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f0b39a;
+}
+.conn::before {
+  content: '●  ';
+}
+.conn.live {
+  color: #7fd3a2;
+}
+
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.switch input {
+  position: absolute;
+  opacity: 0;
+}
+.switch .track {
+  width: 44px;
+  height: 26px;
+  border-radius: 13px;
+  background: #555;
+  position: relative;
+  transition: background 0.2s;
+}
+.switch .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s;
+}
+.switch input:checked + .track {
+  background: var(--success);
+}
+.switch input:checked + .track .thumb {
+  transform: translateX(18px);
+}
+.switch input:focus-visible + .track {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.banner {
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-weight: 600;
+  padding: 10px 16px;
+  text-align: center;
+}
+.banner.closed {
+  background: var(--brand-soft);
+  color: var(--brand-dark);
+}
+
+/* --- tábla --- */
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  padding: 16px;
+  align-items: start;
+}
+@media (max-width: 960px) {
+  .board {
+    grid-template-columns: 1fr;
+  }
+}
+.column h2 {
+  font-size: 16px;
+  margin: 4px 4px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.count {
+  background: var(--ink);
+  color: #fff;
+  border-radius: 999px;
+  font-size: 12px;
+  padding: 2px 9px;
+}
+.count:empty {
+  display: none;
+}
+.cards {
+  display: grid;
+  gap: 12px;
+}
+.empty {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  text-align: center;
+  color: var(--muted);
+}
+
+/* --- rendelés kártya --- */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+}
+.card.pending {
+  border: 2px solid var(--brand);
+  animation: glow 1.6s ease-in-out infinite;
+}
+@keyframes glow {
+  50% {
+    box-shadow: 0 0 0 6px rgba(141, 114, 80, 0.18);
+  }
+}
+.card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.num {
+  font-weight: 800;
+  font-size: 20px;
+}
+.age {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+.badge {
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 3px 9px;
+  background: var(--brand-soft);
+  color: var(--brand-dark);
+}
+.badge.delivery {
+  background: var(--ink);
+  color: #fff;
+}
+.badge.sched {
+  background: #fff4d6;
+  color: #8a5a00;
+}
+.lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.lines li {
+  font-weight: 600;
+}
+.lines b {
+  color: var(--brand-dark);
+}
+.sub {
+  font-weight: 500;
+  color: var(--muted);
+  font-size: 13px;
+  margin-left: 26px;
+}
+.note {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--danger);
+  margin-left: 26px;
+}
+.customer {
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+  display: grid;
+  gap: 4px;
+  font-size: 14px;
+}
+.customer a {
+  color: var(--brand-dark);
+  font-weight: 700;
+}
+.customer .note {
+  margin-left: 0;
+}
+.money {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  justify-content: space-between;
+  align-items: baseline;
+  font-weight: 800;
+  font-size: 17px;
+}
+.money small {
+  font-weight: 500;
+  color: var(--muted);
+  font-size: 13px;
+}
+.eta {
+  background: var(--success-soft);
+  color: var(--success);
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+.actions {
+  display: grid;
+  gap: 8px;
+}
+.actions .label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.minutes {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+.minutes .btn {
+  padding: 0;
+}
+.row {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* --- lezárt --- */
+.history {
+  margin: 0 16px 24px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.history summary {
+  padding: 14px 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.history-list {
+  display: grid;
+}
+.history-item {
+  display: grid;
+  grid-template-columns: 80px 70px 1fr auto auto;
+  gap: 12px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--border);
+  align-items: center;
+  font-size: 14px;
+}
+.history-item .status-done {
+  color: var(--success);
+  font-weight: 700;
+}
+.history-item .status-rejected {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+/* --- dialógus, toast --- */
+dialog {
+  border: none;
+  border-radius: 18px;
+  padding: 22px;
+  width: min(440px, calc(100% - 32px));
+}
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+}
+dialog h2 {
+  margin: 0 0 4px;
+  font-size: 19px;
+}
+.reasons {
+  display: grid;
+  gap: 10px;
+  margin: 14px 0;
+}
+.reasons label {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-weight: 600;
+}
+.reasons textarea {
+  font: inherit;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+  resize: vertical;
+}
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.dialog-actions .btn.ghost {
+  border-color: var(--border);
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: #fff;
+  font-weight: 700;
+  padding: 14px 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  z-index: 20;
+}

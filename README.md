@@ -1,56 +1,132 @@
-# Welcome to your Expo app 👋
+# Erdens Kebab – ételrendelő rendszer
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Foodora-stílusú rendelőrendszer az Erdens Kebab két éttermének (Monor, Kiss Ernő u. 1. és
+Vecsés, Fő út 330.):
 
-## Get started
+- **Mobil app** (iOS + Android, Expo SDK 58 / React Native) – a vendégeknek
+- **Backend** (`server/`, Node.js + SQLite, külső függőség nélkül) – rendelések fogadása, árak ellenőrzése
+- **Éttermi panel** (`server/panel/`, böngészőben/tableten fut) – bejövő rendelések kezelése
+- **Push értesítések** – a vendég értesítést kap minden státuszváltásról
 
-1. Install dependencies
+## Gyors indítás (fejlesztés)
 
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+Két terminálban:
 
 ```bash
-npm run reset-project
+npm install
+npm run server      # backend + éttermi panel: http://localhost:4000/panel/
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+```bash
+npx expo start      # mobil app: i = iOS szimulátor, a = Android emulátor, vagy QR-kód Expo Go-val
+```
 
-### Other setup steps
+Az app fejlesztéskor automatikusan a Metro-t futtató gép 4000-es portján keresi a backendet,
+így telefonról is működik, ha a gép és a telefon ugyanazon a Wi-Fi hálózaton van.
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+**Éttermi panel belépés:** étterem kiválasztása + PIN. Fejlesztéskor az alapértelmezett PIN `1234`
+(élesben kötelező lecserélni, lásd lent).
 
-## Learn more
+## Hogyan működik egy rendelés
 
-To learn more about developing your project with Expo, look at the following resources:
+1. A vendég leadja a rendelést az appban → a szerver a **saját étlapja alapján újraszámolja az árakat**
+   (a telefonról jövő árakban nem bízik), ellenőrzi a kötelező opciókat, a nyitvatartást, a
+   szállítási zónát és a minimális rendelési értéket, majd napi sorszámot ad (pl. `M-012`).
+2. A panelen azonnal megjelenik (Server-Sent Events), **ismétlődő csengővel**, amíg valaki el nem fogadja.
+3. A személyzet elfogad egy elkészülési idővel (15/25/35/45/60 perc), vagy indoklással elutasít.
+4. Léptetés: **Készül → Futárnak átadva / Átvehető → Kiszállítva / Átvéve**.
+5. Az app minden lépést mutat időbélyeggel, és értesítést küld.
+6. A panelről a **rendelésfogadás szüneteltethető** (pl. csúcsidőben) – ilyenkor az app jelzi, és nem enged rendelni.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Push értesítések
 
-## Join the community
+| Környezet | Mi működik |
+| --- | --- |
+| Expo Go, iOS | helyi értesítések, amíg az app fut |
+| Expo Go, Android | nincs értesítés (az Expo Go korlátja), a státusz az appban frissül |
+| Fejlesztői / éles build | **valódi push** a szerverről, akkor is, ha az app be van zárva |
 
-Join our community of developers creating universal apps.
+Valódi push bekapcsolása (egyszeri beállítás, Expo/Apple/Google fiók kell hozzá):
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+npx eas-cli@latest login
+npx eas-cli@latest init          # beírja az EAS projectId-t az app.json-ba
+npx eas-cli@latest build --profile development --platform all
+```
+
+- iOS: Apple Developer fiók (az EAS build automatikusan létrehozza a push kulcsot).
+- Android: Firebase projekt, `google-services.json` – lásd https://docs.expo.dev/push-notifications/fcm-credentials/
+- Ajánlott: Expo access token a szerveren (`EXPO_ACCESS_TOKEN`), ha bekapcsolod az Expo push biztonságot.
+
+Ezután az app automatikusan regisztrálja a push tokent a rendelés követésekor, és a szerver
+(`server/src/push.ts`) minden státuszváltáskor küld értesítést.
+
+## Élesítés
+
+### Szerver
+
+Bármilyen Node 22+ futtatására alkalmas gépen fut (VPS, Render, Fly.io, Railway); az SQLite-hoz
+**tartós tárhely** kell. HTTPS-hez tegyél elé reverse proxyt (pl. Caddy).
+
+| Környezeti változó | Leírás |
+| --- | --- |
+| `PORT` | alapértelmezés: 4000 |
+| `DB_PATH` | az adatbázis fájl helye (alapértelmezés: `server/data/erdens.db`) |
+| `PANEL_PIN_MONOR`, `PANEL_PIN_VECSES` | **kötelező** – a panel PIN kódjai |
+| `EXPO_ACCESS_TOKEN` | opcionális – Expo push hitelesítés |
+
+Mentsd rendszeresen a `DB_PATH` fájlt. A rate limit memóriában van, ezért egy példányban futtasd.
+
+### App
+
+Állítsd be a szerver címét build előtt (pl. `.env` fájlban vagy az EAS build profilban):
+
+```
+EXPO_PUBLIC_API_URL=https://rendeles.erdenskebap.hu
+```
+
+Majd: `npx eas-cli@latest build --profile production` és `npx eas-cli@latest submit`.
+
+### Éttermi panel
+
+Nyisd meg a `https://<szerver>/panel/` címet a pult melletti tableten, lépj be, és koppints a
+„Hang” gombra (a böngészők csak érintés után engedik a hangot). A kijelző ne aludjon el.
+
+## Amit élesítés előtt egyeztetni kell az étteremmel
+
+Az adatok forrása: erdenskebap.hu (étlap-szerkezet, színek), @erdenskebab TikTok (címek),
+online cégjegyzékek (Monor telefonszám, nyitvatartás). **Nyilvános árlapot nem találtam**, ezért:
+
+| Mit | Hol | Állapot |
+| --- | --- | --- |
+| Árak, felárak | `src/data/menu.ts` | becsült |
+| Italok | `src/data/menu.ts` | példa |
+| Szállítási díjak, zónák, minimum | `src/data/locations.ts` | becsült |
+| Vecsési telefonszám | `src/data/locations.ts` | régi „Kebab in Box” listázásból, ellenőrizni kell |
+| Nyitvatartás | `src/data/locations.ts` | cégjegyzékből, ellenőrizni kell |
+| Ételfotók | Unsplash (ingyenes licenc) | cserélendő saját fotókra |
+| Logó | „EK” monogram (`assets/images`) | cserélendő a hivatalos logóra |
+
+Az étlapot és az éttermi adatokat **az app és a szerver ugyanabból a fájlból olvassa**, így elég
+egy helyen módosítani – utána a szervert újra kell indítani és új app buildet kiadni (vagy `eas update`).
+
+## Még nincs benne
+
+- Online kártyás fizetés (pl. Barion vagy SimplePay) – most csak átvételkori fizetés van
+- Termékek elérhetőségének kapcsolása a panelről („elfogyott”)
+- Futár-követés térképen
+- Vendégfiók / bejelentkezés (a rendeléseket most a telefon tárolja)
+
+## Szerkezet
+
+```
+src/app/            app képernyők (Expo Router)
+src/components/     UI komponensek, OrderSync (státusz frissítés + értesítések)
+src/data/           étlap és éttermek – közös az app és a szerver között
+src/lib/            API kliens, értesítések, nyitvatartás, rendelés státuszok (közös)
+src/store/          kosár és mentett állapot
+server/src/         backend: index.ts (API), orders.ts (ellenőrzés), store.ts (SQLite), push.ts, events.ts
+server/panel/       éttermi panel (HTML/CSS/JS)
+```
+
+Ellenőrzések: `npx tsc --noEmit`, `npx expo lint`, `npm run server:check`.
