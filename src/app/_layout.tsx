@@ -54,16 +54,6 @@ export default function RootLayout() {
             <Stack.Screen name="cart" options={{ title: 'Kosár' }} />
             <Stack.Screen name="checkout" options={{ title: 'Pénztár' }} />
             <Stack.Screen name="order/[id]" options={{ headerShown: false, gestureEnabled: false }} />
-            <Stack.Screen
-              name="location"
-              options={{
-                presentation: 'formSheet',
-                headerShown: false,
-                sheetAllowedDetents: 'fitToContents',
-                sheetGrabberVisible: true,
-                sheetCornerRadius: 24,
-              }}
-            />
             <Stack.Screen name="info" options={{ title: 'Étterem információk' }} />
           </Stack>
           <OrderSync />

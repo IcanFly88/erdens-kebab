@@ -1,5 +1,5 @@
 # Render Blueprint – ingyenes demó tárhely (Frankfurt) a backendnek és az éttermi panelnek.
-# Létrehozás: Render → New → Blueprint → ez a repó. A két panel PIN-t a Render ott kéri be.
+# Létrehozás: Render → New → Blueprint → ez a repó. A panel PIN-t a Render ott kéri be.
 # Ingyenes csomagon a szerver 15 perc forgalom nélkül elalszik (ébredés kb. 1 perc), és
 # újraindításkor az adatbázis törlődik – demóhoz megfelelő, élesben fizetős csomag kell.
 services:
@@ -18,6 +18,4 @@ services:
       - key: TRUST_PROXY
         value: "1"
       - key: PANEL_PIN_MONOR
-        sync: false
-      - key: PANEL_PIN_VECSES
         sync: false

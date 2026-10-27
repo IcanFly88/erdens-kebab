@@ -114,13 +114,6 @@ export default function ProfileScreen() {
 
       <Card>
         <LinkRow
-          icon="storefront-outline"
-          label="Kiválasztott étterem"
-          value={location.city}
-          onPress={() => router.push('/location')}
-        />
-        <Divider />
-        <LinkRow
           icon="time-outline"
           label="Nyitvatartás és elérhetőség"
           onPress={() => router.push('/info')}

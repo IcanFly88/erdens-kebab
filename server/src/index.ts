@@ -26,12 +26,11 @@ const TRUST_PROXY = process.env.TRUST_PROXY === '1';
 const DEV_PIN = IS_PRODUCTION ? undefined : '1234';
 const PINS: Record<string, string | undefined> = {
   monor: process.env.PANEL_PIN_MONOR ?? DEV_PIN,
-  vecses: process.env.PANEL_PIN_VECSES ?? DEV_PIN,
 };
-if (!process.env.PANEL_PIN_MONOR || !process.env.PANEL_PIN_VECSES) {
+if (!process.env.PANEL_PIN_MONOR) {
   console.warn(
     IS_PRODUCTION
-      ? '[figyelem] PANEL_PIN_MONOR / PANEL_PIN_VECSES nincs beállítva – a panel belépés addig tiltva.'
+      ? '[figyelem] PANEL_PIN_MONOR nincs beállítva – a panel belépés addig tiltva.'
       : '[figyelem] Fejlesztői panel PIN: 1234',
   );
 }

@@ -1,7 +1,8 @@
 # Erdens Kebab – ételrendelő rendszer
 
-Foodora-stílusú rendelőrendszer az Erdens Kebab két éttermének (Monor, Kiss Ernő u. 1. és
-Vecsés, Fő út 330.):
+Foodora-stílusú rendelőrendszer az Erdens Kebab monori üzletének (Monor, Kiss Ernő u. 1.).
+A rendszer több üzletet is tud kezelni: új üzlethez elég egy újabb elem a `src/data/locations.ts`-ben.
+
 
 - **Mobil app** (iOS + Android, Expo SDK 58 / React Native) – a vendégeknek
 - **Backend** (`server/`, Node.js + SQLite, külső függőség nélkül) – rendelések fogadása, árak ellenőrzése
@@ -21,7 +22,7 @@ Vecsés, Fő út 330.):
 - **Korlátok:** 15 perc forgalom nélkül a szerver elalszik, az ébredés kb. 1 perc; újraindításkor és
   újratelepítéskor a rendelések törlődnek. Az app induláskor felkelti a szervert, rendelésnél kivárja
   az ébredést, a nyitva hagyott panel pedig ébren tartja.
-- **Panel PIN-ek:** Render → `erdens-kebab-demo` → Environment (`PANEL_PIN_MONOR`, `PANEL_PIN_VECSES`).
+- **Panel PIN:** Render → `erdens-kebab-demo` → Environment (`PANEL_PIN_MONOR`).
 
 ### A demó menete
 
@@ -121,7 +122,7 @@ rendelések. Felhőben állítsd be: `NODE_ENV=production`, `TRUST_PROXY=1` (pro
 | --- | --- |
 | `PORT` | alapértelmezés: 4000 |
 | `DB_PATH` | az adatbázis fájl helye (alapértelmezés: `server/data/erdens.db`) |
-| `PANEL_PIN_MONOR`, `PANEL_PIN_VECSES` | **kötelező** – a panel PIN kódjai |
+| `PANEL_PIN_MONOR` | **kötelező** – a panel PIN kódja |
 | `EXPO_ACCESS_TOKEN` | opcionális – Expo push hitelesítés |
 
 Mentsd rendszeresen a `DB_PATH` fájlt. A rate limit memóriában van, ezért egy példányban futtasd.
@@ -151,7 +152,6 @@ online cégjegyzékek (Monor telefonszám, nyitvatartás). **Nyilvános árlapot
 | Árak, felárak | `src/data/menu.ts` | becsült |
 | Italok | `src/data/menu.ts` | példa |
 | Szállítási díjak, zónák, minimum | `src/data/locations.ts` | becsült |
-| Vecsési telefonszám | `src/data/locations.ts` | régi „Kebab in Box” listázásból, ellenőrizni kell |
 | Nyitvatartás | `src/data/locations.ts` | cégjegyzékből, ellenőrizni kell |
 | Ételfotók | Unsplash (ingyenes licenc) | cserélendő saját fotókra |
 | Logó | „EK” monogram (`assets/images`) | cserélendő a hivatalos logóra |

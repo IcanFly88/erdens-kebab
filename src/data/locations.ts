@@ -1,7 +1,8 @@
-// Éttermek adatai. Forrás: erdenskebap.hu, @erdenskebab TikTok, online cégjegyzékek (2026. október).
-// A szállítási díjak és a vecsési telefonszám becsültek — élesítés előtt egyeztesd az étteremmel!
+// Étterem adatai. Forrás: erdenskebap.hu, @erdenskebab TikTok, online cégjegyzékek (2026. október).
+// A szállítási díjak becsültek — élesítés előtt egyeztesd az étteremmel!
+// A rendszer több üzletet is kezel: új üzlethez elég egy újabb elem a LOCATIONS listában.
 
-export type LocationId = 'monor' | 'vecses';
+export type LocationId = 'monor';
 
 /** Nyitvatartás egy napra ("HH:MM"), vagy null, ha zárva. */
 export type DayHours = { open: string; close: string } | null;
@@ -51,26 +52,6 @@ export const LOCATIONS: Location[] = [
       { town: 'Péteri', fee: 790, eta: [35, 50] },
       { town: 'Gomba', fee: 990, eta: [40, 55] },
     ],
-    minOrder: 3000,
-    pickupEta: [10, 15],
-  },
-  {
-    id: 'vecses',
-    name: 'Erdens Kebab Vecsés',
-    city: 'Vecsés',
-    address: '2220 Vecsés, Fő út 330.',
-    phone: '+36 29 267 733',
-    mapsUrl: 'https://maps.app.goo.gl/9ai9rrSdErLYbNu78',
-    hours: [
-      null,
-      { open: '12:00', close: '20:00' },
-      { open: '10:00', close: '20:00' },
-      { open: '10:00', close: '20:00' },
-      { open: '10:00', close: '20:00' },
-      { open: '10:00', close: '20:00' },
-      { open: '12:00', close: '20:00' },
-    ],
-    deliveryZones: [{ town: 'Vecsés', fee: 490, eta: [25, 40] }],
     minOrder: 3000,
     pickupEta: [10, 15],
   },

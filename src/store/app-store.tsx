@@ -34,7 +34,6 @@ type PersistedState = Omit<State, 'hydrated'>;
 
 type Action =
   | { type: 'hydrate'; state: Partial<PersistedState> }
-  | { type: 'setLocation'; id: LocationId }
   | { type: 'setMode'; mode: Mode }
   | { type: 'addLine'; line: Omit<CartLine, 'key'> }
   | { type: 'replaceLine'; key: string; line: Omit<CartLine, 'key'> }
@@ -79,15 +78,20 @@ function reducer(state: State, action: Action): State {
     case 'hydrate': {
       // A korábbi, szerver nélküli (demó) rendeléseknek nincs státuszuk – ezeket eldobjuk.
       const orders = (action.state.orders ?? []).filter((o) => typeof o.status === 'string');
-      return { ...state, ...action.state, orders, hydrated: true };
-    }
-    case 'setLocation': {
-      const loc = getLocation(action.id);
-      const townValid = loc.deliveryZones.some((z) => z.town === state.address.town);
+      // Egy korábbi verzióban mentett, már nem létező üzletet és települést lecseréljük.
+      const saved = action.state.locationId;
+      const locationId = saved && isLocationId(saved) ? saved : LOCATIONS[0].id;
+      const zones = getLocation(locationId).deliveryZones;
+      const address = action.state.address ?? state.address;
       return {
         ...state,
-        locationId: action.id,
-        address: townValid ? state.address : { ...state.address, town: loc.deliveryZones[0].town },
+        ...action.state,
+        orders,
+        locationId,
+        address: zones.some((z) => z.town === address.town)
+          ? address
+          : { ...address, town: zones[0].town },
+        hydrated: true,
       };
     }
     case 'setMode':

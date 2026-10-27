@@ -17,13 +17,8 @@
       <form id="login-form" class="login-card">
         <div class="brand">ERDEN'S KEBAB</div>
         <h1>Rendelésfogadó</h1>
-        <label>
-          Étterem
-          <select name="locationId">
-            <option value="monor">Monor – Kiss Ernő u. 1.</option>
-            <option value="vecses">Vecsés – Fő út 330.</option>
-          </select>
-        </label>
+        <p class="muted">Monor – Kiss Ernő u. 1.</p>
+        <input type="hidden" name="locationId" value="monor" />
         <label>
           PIN kód
           <input name="pin" type="password" inputmode="numeric" autocomplete="current-password" required />

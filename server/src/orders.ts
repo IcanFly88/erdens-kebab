@@ -136,7 +136,7 @@ export function buildOrder(
     throw new ValidationError('Az étterem most zárva van – válassz későbbi időpontot');
   }
 
-  const prefix = location.id === 'monor' ? 'M' : 'V';
+  const prefix = location.city.charAt(0).toUpperCase();
   return {
     id: randomUUID(),
     number: `${prefix}-${String(opts.sequence).padStart(3, '0')}`,

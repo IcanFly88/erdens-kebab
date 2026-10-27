@@ -123,24 +123,17 @@ export default function MenuScreen() {
             style={StyleSheet.absoluteFill}
           />
           <View style={[styles.heroTop, { paddingTop: insets.top + 8 }]}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Étterem kiválasztása"
-              onPress={() => router.push('/location')}
-              style={styles.locationPill}>
+            <View style={styles.locationPill}>
               <Ionicons name="location" size={18} color={Colors.white} />
               <View>
                 <T variant="caption" color="rgba(255,255,255,0.8)">
                   {mode === 'delivery' ? 'Kiszállítás innen' : 'Átvétel itt'}
                 </T>
-                <View style={styles.row}>
-                  <T variant="smallStrong" color={Colors.white}>
-                    {location.city}
-                  </T>
-                  <Ionicons name="chevron-down" size={14} color={Colors.white} />
-                </View>
+                <T variant="smallStrong" color={Colors.white}>
+                  {location.city}
+                </T>
               </View>
-            </Pressable>
+            </View>
             <View style={styles.row}>
               <CircleButton icon="search" label="Keresés" onPress={() => router.navigate('/search')} />
               <CircleButton
