@@ -81,9 +81,8 @@ export function buildOrder(
       }
       if (chosen.length) selections[group.id] = chosen as string[];
     }
-    for (const key of Object.keys(given)) {
-      if (!item.optionGroups?.includes(key)) throw new ValidationError(`Hibás opció: ${item.name}`);
-    }
+    // A terméken már nem szereplő opciót (pl. régebbi app a dürümhöz még szószt küld) figyelmen
+    // kívül hagyjuk, hogy a frissítés előtti appokból is le lehessen adni a rendelést.
     const missing = missingRequired(item, selections);
     if (missing) throw new ValidationError(`${item.name}: válassz – ${missing.title.toLowerCase()}`);
     const note = str(l.note, 140, 'megjegyzés');
@@ -126,7 +125,7 @@ export function buildOrder(
 
   const subtotal = lines.reduce((sum, l) => sum + l.unitPrice * l.qty, 0);
   const packagingFee = packagingFor(lines);
-  if (mode === 'delivery' && subtotal < location.minOrder) {
+  if (mode === 'delivery' && location.minOrder > 0 && subtotal < location.minOrder) {
     throw new ValidationError(`A minimális rendelési érték kiszállításnál ${location.minOrder} Ft`);
   }
 

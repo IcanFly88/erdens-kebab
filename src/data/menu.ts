@@ -1,6 +1,7 @@
 // Étlap – a monori üzlet nyomtatott étlapja alapján (2026. október 27.).
 // Kebab Tál, Dürüm (tortilla), Pita: csirke / borjú ár (a borjú +500 Ft), Mix és Falafel fix áron.
 // A tálak ára tartalmazza a választható köretet (hasábburgonya vagy jázmin rizs) és 1 szószt.
+// A Cheddar szósz az árban csak a Ropogós Falatok tálakhoz választható; a kebabokhoz külön rendelhető.
 // Csomagolás (az étlap alján): tál 200 Ft, dürüm és pita 100 Ft – külön sorban számoljuk.
 // Ezt a fájlt az app és a szerver is használja: árváltozásnál elég itt módosítani.
 
@@ -63,6 +64,21 @@ const PACKAGING_WRAP = 100;
 
 const BEEF_SURCHARGE = 500;
 
+const SAUCE_CHOICES: OptionChoice[] = [
+  { id: 'fokhagymas', name: 'Fokhagymás (alap)' },
+  { id: 'csipos', name: 'Csípős' },
+  { id: 'andalouse', name: 'Andalouse' },
+  { id: 'hannibal', name: 'Hannibal' },
+  { id: 'curry', name: 'Curry' },
+  { id: 'samurai', name: 'Samurai' },
+  { id: 'tartar', name: 'Tartár' },
+  { id: 'cheddar', name: 'Cheddar' },
+];
+
+/**
+ * A kulcs a termékek `optionGroups` listájában szerepel; a csoport `id`-ja a kiválasztások kulcsa.
+ * A kettő eltérhet (pl. `sauceKebab` → `sauce`), így a rendelésekben mindig `sauce` a szósz.
+ */
 export const OPTION_GROUPS: Record<string, OptionGroup> = {
   meat: {
     id: 'meat',
@@ -89,16 +105,15 @@ export const OPTION_GROUPS: Record<string, OptionGroup> = {
     title: 'Szósz',
     type: 'single',
     required: true,
-    choices: [
-      { id: 'fokhagymas', name: 'Fokhagymás (alap)' },
-      { id: 'csipos', name: 'Csípős' },
-      { id: 'andalouse', name: 'Andalouse' },
-      { id: 'hannibal', name: 'Hannibal' },
-      { id: 'curry', name: 'Curry' },
-      { id: 'samurai', name: 'Samurai' },
-      { id: 'tartar', name: 'Tartár' },
-      { id: 'cheddar', name: 'Cheddar' },
-    ],
+    choices: SAUCE_CHOICES,
+  },
+  /** Kebab tál, dürüm, pita: ugyanaz a szósz-választás, de Cheddar nélkül (az ott felárral, külön jár). */
+  sauceKebab: {
+    id: 'sauce',
+    title: 'Szósz',
+    type: 'single',
+    required: true,
+    choices: SAUCE_CHOICES.filter((c) => c.id !== 'cheddar'),
   },
   remove: {
     id: 'remove',
@@ -162,7 +177,7 @@ function kebabItems(
       optionGroups: [
         ...(r.fixed ? [] : ['meat']),
         ...(options.withSide ? ['side'] : []),
-        'sauce',
+        'sauceKebab',
         'remove',
       ],
     };

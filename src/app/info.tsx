@@ -97,9 +97,11 @@ export default function InfoScreen() {
               </T>
             </View>
           ))}
-          <T variant="caption" color={Colors.textFaint} style={styles.minOrder}>
-            Minimális rendelési érték kiszállításnál: {formatPrice(loc.minOrder)}
-          </T>
+          {loc.minOrder > 0 ? (
+            <T variant="caption" color={Colors.textFaint} style={styles.minOrder}>
+              Minimális rendelési érték kiszállításnál: {formatPrice(loc.minOrder)}
+            </T>
+          ) : null}
         </Card>
       ))}
 

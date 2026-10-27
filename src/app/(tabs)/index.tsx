@@ -181,7 +181,11 @@ export default function MenuScreen() {
               <>
                 <Stat icon="pricetag-outline" value={formatFee(zone.fee)} label={`Díj · ${zone.town}`} />
                 <View style={styles.statDivider} />
-                <Stat icon="basket-outline" value={formatPrice(location.minOrder)} label="Min. rendelés" />
+                {location.minOrder > 0 ? (
+                  <Stat icon="basket-outline" value={formatPrice(location.minOrder)} label="Min. rendelés" />
+                ) : (
+                  <Stat icon="cash-outline" value="Átvételkor" label="Fizetés" />
+                )}
               </>
             ) : (
               <Stat icon="storefront-outline" value={location.city} label={location.address.replace(/^\d+\s/, '')} />

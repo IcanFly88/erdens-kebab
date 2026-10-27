@@ -188,14 +188,14 @@ Nyisd meg a `https://<szerver>/panel/` címet a pult melletti tableten, lépj be
 
 Az étlap, a szószok, a köretek, a baklava, a csomagolási díj (tál 200 Ft, dürüm/pita 100 Ft), a
 szállítási zónák és díjak (Monoron ingyenes, a környékre 800 Ft), a nyitvatartás és a telefonszám a
-monori üzlet nyomtatott étlapjáról és szórólapjáról származnak (2026. október 27.).
+monori üzlet nyomtatott étlapjáról és szórólapjáról származnak (2026. október 27.). Az üzlet
+megerősítette: minimális rendelési érték nincs, és a Cheddar szósz az árban csak a ropogós tálakhoz
+választható (a kebabokhoz külön rendelhető).
 Még egyeztetni kell:
 
 | Mit | Hol | Állapot |
 | --- | --- | --- |
 | Italok | `src/data/menu.ts` | nincsenek az étlapon – ha árulják, fel kell venni |
-| Cheddar szósz a tálakhoz/dürümhöz | `src/data/menu.ts` | most felár nélkül választható (külön 480 Ft) |
-| Minimális rendelési érték | `src/data/locations.ts` | nincs a szórólapon, most 3000 Ft |
 | Szállítási idők | `src/data/locations.ts` | becsült |
 | Ételfotók | Unsplash (ingyenes licenc) | cserélendő saját fotókra |
 | Logó | „EK” monogram (`assets/images`) | cserélendő a hivatalos logóra |

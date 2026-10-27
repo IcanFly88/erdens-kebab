@@ -55,7 +55,8 @@ export const LOCATIONS: Location[] = [
       { town: 'Gomba', fee: 800, eta: [40, 55] },
       { town: 'Bénye', fee: 800, eta: [40, 55] },
     ],
-    minOrder: 3000,
+    // Nincs minimális rendelési érték (az üzlet megerősítette).
+    minOrder: 0,
     pickupEta: [10, 15],
   },
 ];
