@@ -81,6 +81,25 @@ const SAUCE_CHOICES: OptionChoice[] = [
   { id: 'cheddar', name: 'Cheddar' },
 ];
 
+const SODA_CHOICES: OptionChoice[] = [
+  { id: 'pepsi', name: 'Pepsi' },
+  { id: 'pepsi-citrom', name: 'Pepsi citromos' },
+  { id: 'pepsi-zero', name: 'Pepsi Zero' },
+  { id: '7up', name: '7Up' },
+  { id: 'mountain-dew', name: 'Mountain Dew' },
+  { id: 'schweppes-narancs', name: 'Schweppes narancs' },
+  { id: 'schweppes-citrus', name: 'Schweppes Citrus Mix' },
+  { id: 'lipton-narancs-mango', name: 'Lipton Ice Tea narancs-mangó' },
+  { id: 'lipton-citrom', name: 'Lipton Ice Tea citrom' },
+  { id: 'lipton-eper', name: 'Lipton Ice Tea eper' },
+  { id: 'lipton-zold', name: 'Lipton Ice Tea zöld tea' },
+  { id: 'toma-meggy', name: 'Toma meggy' },
+  { id: 'toma-narancs', name: 'Toma narancsnektár' },
+  { id: 'toma-alma', name: 'Toma alma' },
+  { id: 'toma-multi', name: 'Toma multifruit' },
+  { id: 'canada-dry', name: 'Canada Dry' },
+];
+
 /**
  * A kulcs a termékek `optionGroups` listájában szerepel; a csoport `id`-ja a kiválasztások kulcsa.
  * A kettő eltérhet (pl. `sauceKebab` → `sauce`), így a rendelésekben mindig `sauce` a szósz.
@@ -127,23 +146,19 @@ export const OPTION_GROUPS: Record<string, OptionGroup> = {
     title: 'Üdítő',
     type: 'single',
     required: true,
+    choices: SODA_CHOICES,
+  },
+  /** A 0,5 literes Hellek is a 0,5 l-es üdítő egységárán mennek (az üzlet kérése). */
+  soda05: {
+    id: 'ital',
+    title: 'Üdítő',
+    type: 'single',
+    required: true,
     choices: [
-      { id: 'pepsi', name: 'Pepsi' },
-      { id: 'pepsi-citrom', name: 'Pepsi citromos' },
-      { id: 'pepsi-zero', name: 'Pepsi Zero' },
-      { id: '7up', name: '7Up' },
-      { id: 'mountain-dew', name: 'Mountain Dew' },
-      { id: 'schweppes-narancs', name: 'Schweppes narancs' },
-      { id: 'schweppes-citrus', name: 'Schweppes Citrus Mix' },
-      { id: 'lipton-narancs-mango', name: 'Lipton Ice Tea narancs-mangó' },
-      { id: 'lipton-citrom', name: 'Lipton Ice Tea citrom' },
-      { id: 'lipton-eper', name: 'Lipton Ice Tea eper' },
-      { id: 'lipton-zold', name: 'Lipton Ice Tea zöld tea' },
-      { id: 'toma-meggy', name: 'Toma meggy' },
-      { id: 'toma-narancs', name: 'Toma narancsnektár' },
-      { id: 'toma-alma', name: 'Toma alma' },
-      { id: 'toma-multi', name: 'Toma multifruit' },
-      { id: 'canada-dry', name: 'Canada Dry' },
+      ...SODA_CHOICES,
+      { id: 'hell-tropical-ride', name: 'Hell Tropical Ride' },
+      { id: 'hell-big-bubbles', name: 'Hell Big Bubbles' },
+      { id: 'hell-jungle-treasure', name: 'Hell Jungle Treasure' },
     ],
   },
   water: {
@@ -162,13 +177,10 @@ export const OPTION_GROUPS: Record<string, OptionGroup> = {
     type: 'single',
     required: true,
     choices: [
-      { id: 'classic', name: 'Classic (0,25 l)' },
-      { id: 'black-cherry', name: 'Black Cherry (0,25 l)' },
-      { id: 'yuzu-cherry', name: 'Yuzu-Cherry (0,25 l)' },
-      { id: 'strong-red-grape', name: 'Strong Red Grape (0,25 l)' },
-      { id: 'tropical-ride', name: 'Tropical Ride (0,5 l)' },
-      { id: 'big-bubbles', name: 'Big Bubbles (0,5 l)' },
-      { id: 'jungle-treasure', name: 'Jungle Treasure (0,5 l)' },
+      { id: 'classic', name: 'Classic' },
+      { id: 'black-cherry', name: 'Black Cherry' },
+      { id: 'yuzu-cherry', name: 'Yuzu-Cherry' },
+      { id: 'strong-red-grape', name: 'Strong Red Grape' },
     ],
   },
   xixo: {
@@ -425,10 +437,10 @@ export const MENU: MenuItem[] = [
     id: 'ital-udito-05',
     categoryId: 'italok',
     name: 'Üdítő 0,5 l',
-    description: 'Pepsi, 7Up, Mountain Dew, Schweppes, Lipton Ice Tea, Toma, Canada Dry.',
+    description: 'Pepsi, 7Up, Mountain Dew, Schweppes, Lipton Ice Tea, Toma, Canada Dry, Hell 0,5 l.',
     price: 680,
     image: IMAGES.sodaCan,
-    optionGroups: ['soda'],
+    optionGroups: ['soda05'],
   },
   {
     id: 'ital-ayran',
@@ -450,8 +462,8 @@ export const MENU: MenuItem[] = [
   {
     id: 'ital-hell',
     categoryId: 'italok',
-    name: 'Hell energiaital',
-    description: 'Classic, Black Cherry, Yuzu-Cherry, Strong Red Grape, Tropical Ride, Big Bubbles, Jungle Treasure.',
+    name: 'Hell energiaital 0,25 l',
+    description: 'Classic, Black Cherry, Yuzu-Cherry, Strong Red Grape. A 0,5 l-es Hellek az üdítők között.',
     price: 480,
     image: IMAGES.energy,
     optionGroups: ['hell'],
