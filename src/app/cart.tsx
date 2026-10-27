@@ -20,7 +20,7 @@ import { useSoldOut } from '@/lib/use-restaurant-status';
 import { useStatusBarStyle } from '@/lib/use-status-bar';
 import { deliveryZone, useApp } from '@/store/app-store';
 
-const UPSELL_IDS = ['baklava-pisztacia', 'koret-hasab', 'szosz-cheddar', 'baklava-dios', 'ropogos-nuggets'];
+const UPSELL_IDS = ['ital-ayran', 'ital-udito-033', 'baklava-pisztacia', 'koret-hasab', 'szosz-cheddar'];
 
 export default function CartScreen() {
   const insets = useSafeAreaInsets();

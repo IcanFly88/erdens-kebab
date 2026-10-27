@@ -15,7 +15,7 @@ import { useSoldOut } from '@/lib/use-restaurant-status';
 import { useStatusBarStyle } from '@/lib/use-status-bar';
 import { useApp } from '@/store/app-store';
 
-const SUGGESTIONS = ['Tál', 'Dürüm', 'Istanbul', 'Falafel', 'Nuggets', 'Szósz', 'Baklava'];
+const SUGGESTIONS = ['Tál', 'Dürüm', 'Falafel', 'Nuggets', 'Pepsi', 'Ayran', 'Baklava'];
 
 export default function SearchScreen() {
   const insets = useSafeAreaInsets();

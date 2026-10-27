@@ -190,12 +190,12 @@ Az étlap, a szószok, a köretek, a baklava, a csomagolási díj (tál 200 Ft, 
 szállítási zónák és díjak (Monoron ingyenes, a környékre 800 Ft), a nyitvatartás és a telefonszám a
 monori üzlet nyomtatott étlapjáról és szórólapjáról származnak (2026. október 27.). Az üzlet
 megerősítette: minimális rendelési érték nincs, és a Cheddar szósz az árban csak a ropogós tálakhoz
-választható (a kebabokhoz külön rendelhető).
+választható (a kebabokhoz külön rendelhető). Az italok és áraik az üzlet pénztárgépe és itallistája alapján
+kerültek fel (kávé és üveg nélkül).
 Még egyeztetni kell:
 
 | Mit | Hol | Állapot |
 | --- | --- | --- |
-| Italok | `src/data/menu.ts` | nincsenek az étlapon – ha árulják, fel kell venni |
 | Szállítási idők | `src/data/locations.ts` | becsült |
 | Ételfotók | Unsplash (ingyenes licenc) | cserélendő saját fotókra |
 | Logó | „EK” monogram (`assets/images`) | cserélendő a hivatalos logóra |
