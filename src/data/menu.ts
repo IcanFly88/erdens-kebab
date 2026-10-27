@@ -148,19 +148,6 @@ export const OPTION_GROUPS: Record<string, OptionGroup> = {
     required: true,
     choices: SODA_CHOICES,
   },
-  /** A 0,5 literes Hellek is a 0,5 l-es üdítő egységárán mennek (az üzlet kérése). */
-  soda05: {
-    id: 'ital',
-    title: 'Üdítő',
-    type: 'single',
-    required: true,
-    choices: [
-      ...SODA_CHOICES,
-      { id: 'hell-tropical-ride', name: 'Hell Tropical Ride' },
-      { id: 'hell-big-bubbles', name: 'Hell Big Bubbles' },
-      { id: 'hell-jungle-treasure', name: 'Hell Jungle Treasure' },
-    ],
-  },
   water: {
     id: 'ital',
     title: 'Szénsav',
@@ -181,6 +168,18 @@ export const OPTION_GROUPS: Record<string, OptionGroup> = {
       { id: 'black-cherry', name: 'Black Cherry' },
       { id: 'yuzu-cherry', name: 'Yuzu-Cherry' },
       { id: 'strong-red-grape', name: 'Strong Red Grape' },
+    ],
+  },
+  /** A 0,5 literes Hell a 0,5 l-es üdítő egységárán megy (az üzlet kérése), de a Hellek között marad. */
+  hell05: {
+    id: 'ital',
+    title: 'Íz',
+    type: 'single',
+    required: true,
+    choices: [
+      { id: 'tropical-ride', name: 'Tropical Ride' },
+      { id: 'big-bubbles', name: 'Big Bubbles' },
+      { id: 'jungle-treasure', name: 'Jungle Treasure' },
     ],
   },
   xixo: {
@@ -437,10 +436,10 @@ export const MENU: MenuItem[] = [
     id: 'ital-udito-05',
     categoryId: 'italok',
     name: 'Üdítő 0,5 l',
-    description: 'Pepsi, 7Up, Mountain Dew, Schweppes, Lipton Ice Tea, Toma, Canada Dry, Hell 0,5 l.',
+    description: 'Pepsi, 7Up, Mountain Dew, Schweppes, Lipton Ice Tea, Toma, Canada Dry.',
     price: 680,
     image: IMAGES.sodaCan,
-    optionGroups: ['soda05'],
+    optionGroups: ['soda'],
   },
   {
     id: 'ital-ayran',
@@ -463,10 +462,19 @@ export const MENU: MenuItem[] = [
     id: 'ital-hell',
     categoryId: 'italok',
     name: 'Hell energiaital 0,25 l',
-    description: 'Classic, Black Cherry, Yuzu-Cherry, Strong Red Grape. A 0,5 l-es Hellek az üdítők között.',
+    description: 'Classic, Black Cherry, Yuzu-Cherry, Strong Red Grape.',
     price: 480,
     image: IMAGES.energy,
     optionGroups: ['hell'],
+  },
+  {
+    id: 'ital-hell-05',
+    categoryId: 'italok',
+    name: 'Hell energiaital 0,5 l',
+    description: 'Tropical Ride, Big Bubbles, Jungle Treasure.',
+    price: 680,
+    image: IMAGES.energy,
+    optionGroups: ['hell05'],
   },
   {
     id: 'ital-xixo',
