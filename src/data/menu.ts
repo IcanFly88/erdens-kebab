@@ -471,7 +471,7 @@ export const MENU: MenuItem[] = [
   {
     id: 'ital-xixo',
     categoryId: 'italok',
-    name: 'Xixo',
+    name: 'Xixo 0,25 l',
     description: 'Jeges tea – citromos, epres vagy barackos.',
     price: 380,
     image: IMAGES.icedTea,
