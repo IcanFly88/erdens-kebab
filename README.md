@@ -60,7 +60,28 @@ feltöltés után 5–10 perc alatt dolgozza fel, utána a belső tesztelők aut
   az első buildet az Apple béta-ellenőrzésen nézi át (általában kb. 1 nap). Mivel az app egy valódi
   étterem nevét viseli, a megjegyzésben érdemes jelezni, hogy a megbízásukra készül.
 
-Androidra (opcionális) telepíthető APK: `npx eas-cli@latest build -p android --profile preview`.
+### Android – Google Play belső tesztelés
+
+**Állapot:** a Play Console-ban `Erdens Kebab` (`hu.erdenskebab.app`), a **Belső tesztelés** sávon.
+Tesztelők: „Erdens Kebab tesztelők” e-mail-lista (Play Console → Tesztelés → Belső tesztelés →
+Tesztelők). Csatlakozási link a tesztelőknek (a telefonon, a listán szereplő Google-fiókkal):
+https://play.google.com/apps/internaltest/4701668673763200315
+
+Új verzió – helyben, a Macen (kb. 5–7 perc, nem fogyasztja az EAS keretet; az aláíró kulcsot az EAS adja):
+
+```bash
+JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home" ANDROID_HOME="$HOME/Library/Android/sdk" \
+  npx eas-cli@latest build --local -p android --profile production --non-interactive --output ~/Downloads/ErdensKebab.aab
+```
+
+Utána Play Console → Belső tesztelés → **Új kiadás létrehozása** → az `.aab` behúzása → kiadási
+megjegyzés → **Mentés és közzététel**. A Play Console a fájlt csak kézi behúzással fogadja.
+
+A nyilvános megjelenéshez (személyes fejlesztői fióknál) előbb **zárt teszt kell legalább 12
+tesztelővel, 14 napon át**, utána igényelhető az éles hozzáférés. Android push értesítéshez Firebase
+(FCM) beállítás kell – addig a rendelés állapota az appban frissül.
+
+Gyors, Play nélküli telepítés (APK): `npx eas-cli@latest build -p android --profile preview`.
 
 ## Gyors indítás (fejlesztés)
 
