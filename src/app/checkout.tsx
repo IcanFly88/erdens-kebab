@@ -270,16 +270,6 @@ export default function CheckoutScreen() {
               />
             </View>
           ))}
-          <Divider />
-          <ChoiceRow
-            kind="radio"
-            label="Online bankkártya"
-            sublabel="Hamarosan"
-            selected={false}
-            disabled
-            onPress={() => {}}
-            trailing={<Ionicons name="lock-closed-outline" size={18} color={Colors.textFaint} />}
-          />
         </Card>
 
         {mode === 'delivery' ? (

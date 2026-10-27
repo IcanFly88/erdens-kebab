@@ -85,7 +85,9 @@ Az app fejlesztéskor automatikusan a Metro-t futtató gép 4000-es portján ker
 3. A személyzet elfogad egy elkészülési idővel (15/25/35/45/60 perc), vagy indoklással elutasít.
 4. Léptetés: **Készül → Futárnak átadva / Átvehető → Kiszállítva / Átvéve**.
 5. Az app minden lépést mutat időbélyeggel, és értesítést küld.
-6. A panelről a **rendelésfogadás szüneteltethető** (pl. csúcsidőben) – ilyenkor az app jelzi, és nem enged rendelni.
+6. **Fizetés mindig átvételkor:** készpénz, bankkártya a futárnál vagy a pultnál, illetve SZÉP-kártya.
+   Az app szándékosan nem kezel online fizetést.
+7. A panelről a **rendelésfogadás szüneteltethető** (pl. csúcsidőben) – ilyenkor az app jelzi, és nem enged rendelni.
 
 ## Push értesítések
 
@@ -166,7 +168,6 @@ egy helyen módosítani – utána a szervert újra kell indítani és új app b
 
 ## Még nincs benne
 
-- Online kártyás fizetés (pl. Barion vagy SimplePay) – most csak átvételkori fizetés van
 - Termékek elérhetőségének kapcsolása a panelről („elfogyott”)
 - Futár-követés térképen
 - Vendégfiók / bejelentkezés (a rendeléseket most a telefon tárolja)
