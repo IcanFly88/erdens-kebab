@@ -20,9 +20,13 @@ A rendszer több üzletet is tud kezelni: új üzlethez elég egy újabb elem a 
 - **Tárhely:** Render ingyenes csomag, Frankfurt (`render.yaml`, `Dockerfile`). A GitHub `main` ágra
   történő minden push automatikusan újratelepíti. Ha egy commit nem érinti a szervert, írd az
   üzenetébe: `[skip render]`.
-- **Korlátok:** 15 perc forgalom nélkül a szerver elalszik, az ébredés kb. 1 perc; újraindításkor és
-  újratelepítéskor a rendelések törlődnek. Az app induláskor felkelti a szervert, rendelésnél kivárja
-  az ébredést, a nyitva hagyott panel pedig ébren tartja.
+- **Adatbázis:** [Turso](https://turso.tech) (felhős SQLite, ingyenes csomag) – a rendelések, a
+  panel-belépések és az elfogyott termékek az alvást, újraindítást és újratelepítést is túlélik.
+  Beállítás: Render → `erdens-kebab-demo` → Environment → `TURSO_DATABASE_URL` (`libsql://…`) és
+  `TURSO_AUTH_TOKEN`. Ha ezek hiányoznak, a szerver helyi fájlt használ, ami újraindításkor törlődik.
+  Hogy melyik működik, a `/health` mutatja (`"storage": "turso"`).
+- **Korlátok:** 15 perc forgalom nélkül a szerver elalszik, az ébredés kb. 1 perc. Az app induláskor
+  felkelti a szervert, rendelésnél kivárja az ébredést, a nyitva hagyott panel pedig ébren tartja.
 - **Panel PIN:** Render → `erdens-kebab-demo` → Environment (`PANEL_PIN_MONOR`).
 
 ### A demó menete
@@ -125,18 +129,19 @@ Ezután az app automatikusan regisztrálja a push tokent a rendelés követések
 
 ### Szerver
 
-A `Dockerfile` bármilyen Docker tárhelyen fut (Render, Railway, Fly.io, VPS). Élesben fizetős csomag
-kell **tartós tárhellyel** (Renderen: disk a `/data` útvonalra), különben újraindításkor elvesznek a
-rendelések. Felhőben állítsd be: `NODE_ENV=production`, `TRUST_PROXY=1` (proxy mögött a valódi IP-hez).
+A `Dockerfile` bármilyen Docker tárhelyen fut (Render, Railway, Fly.io, VPS). Az adatok Tursóban
+vannak; élesben a Render fizetős csomagja ajánlott, mert az nem alszik el (az első rendelésnél nincs
+ébredési várakozás). Felhőben állítsd be: `NODE_ENV=production`, `TRUST_PROXY=1` (proxy mögött a valódi IP-hez).
 
 | Környezeti változó | Leírás |
 | --- | --- |
 | `PORT` | alapértelmezés: 4000 |
-| `DB_PATH` | az adatbázis fájl helye (alapértelmezés: `server/data/erdens.db`) |
+| `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN` | felhős adatbázis (Turso); ha be vannak állítva, a szerver ide ír |
+| `DB_PATH` | helyi adatbázis fájl, ha nincs Turso (alapértelmezés: `server/data/erdens.db`) |
 | `PANEL_PIN_MONOR` | **kötelező** – a panel PIN kódja |
 | `EXPO_ACCESS_TOKEN` | opcionális – Expo push hitelesítés |
 
-Mentsd rendszeresen a `DB_PATH` fájlt. A rate limit memóriában van, ezért egy példányban futtasd.
+A rate limit és a sorba rendezés memóriában van, ezért egy példányban futtasd.
 
 ### App
 

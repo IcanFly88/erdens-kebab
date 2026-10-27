@@ -11,13 +11,20 @@ import { broadcast, subscribe } from './events.ts';
 import { buildOrder, nextSequence, ValidationError } from './orders.ts';
 import { notifyCustomer } from './push.ts';
 import { computeStats, ordersCsv, periodStart, PERIODS, type Period } from './stats.ts';
-import { createStore, publicOrder, type StoredOrder } from './store.ts';
+import { openStore, publicOrder, type StoredOrder } from './store.ts';
 import { isOpenAt } from './time.ts';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const PANEL_DIR = join(ROOT, 'panel');
 const PORT = Number(process.env.PORT ?? 4000);
-const store = createStore(process.env.DB_PATH ?? join(ROOT, 'data', 'erdens.db'));
+// Ha be van állítva a Turso (felhős SQLite), oda ír – így az ingyenes tárhely újraindításakor sem
+// vesznek el a rendelések. Különben helyi SQLite fájl (fejlesztéshez).
+const store = await openStore({
+  path: process.env.DB_PATH ?? join(ROOT, 'data', 'erdens.db'),
+  tursoUrl: process.env.TURSO_DATABASE_URL,
+  tursoToken: process.env.TURSO_AUTH_TOKEN,
+});
+console.log(`[adatbázis] ${store.kind === 'turso' ? 'Turso (tartós)' : 'helyi fájl'}`);
 
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 // Felhőben (Railway) a kérések proxyn keresztül jönnek; a valódi IP az X-Forwarded-For fejlécben van.
@@ -96,30 +103,38 @@ function sameSecret(a: string, b: string) {
   return ba.length === bb.length && timingSafeEqual(ba, bb);
 }
 
-function panelLocation(req: IncomingMessage, url: URL): string {
+/**
+ * Az olvasás–módosítás–írás lépéseket sorban hajtjuk végre (pl. ne kapjon két egyszerre érkező
+ * rendelés azonos sorszámot, és ne fogadjon el két tablet egyszerre ugyanazt a rendelést).
+ */
+let queue: Promise<unknown> = Promise.resolve();
+function serial<T>(task: () => Promise<T>): Promise<T> {
+  const result = queue.then(task, task);
+  queue = result.catch(() => {});
+  return result;
+}
+
+async function panelLocation(req: IncomingMessage, url: URL): Promise<string> {
   const header = req.headers.authorization ?? '';
   const token = header.startsWith('Bearer ') ? header.slice(7) : url.searchParams.get('token');
-  const locationId = token ? store.sessionLocation(token) : undefined;
+  const locationId = token ? await store.sessionLocation(token) : undefined;
   if (!locationId) throw new HttpError(401, 'Lejárt vagy hibás belépés');
   return locationId;
 }
 
-function changeOrder(order: StoredOrder, status: OrderStatus, patch: Partial<StoredOrder> = {}) {
+async function changeOrder(order: StoredOrder, status: OrderStatus, patch: Partial<StoredOrder> = {}) {
   const now = Date.now();
   Object.assign(order, patch, { status, updatedAt: now });
   order.statusHistory.push({ status, at: now });
-  store.saveOrder(order);
+  await store.saveOrder(order);
   broadcast(order.locationId, 'order', publicOrder(order));
   void notifyCustomer(order);
 }
 
 function locationStatus(now: number) {
-  return LOCATIONS.map((l) => ({
-    id: l.id,
-    paused: store.isPaused(l.id),
-    open: isOpenAt(l, now),
-    soldOut: store.soldOut(l.id),
-  }));
+  return Promise.all(
+    LOCATIONS.map(async (l) => ({ id: l.id, open: isOpenAt(l, now), ...(await store.settings(l.id)) })),
+  );
 }
 
 /** A panel "Étlap" nézetéhez: kategóriák és termékek, ár szerint. */
@@ -137,35 +152,42 @@ async function handleApi(req: IncomingMessage, res: ServerResponse, url: URL) {
 
   // Vendég (mobil app)
   if (method === 'GET' && url.pathname === '/api/status') {
-    return send(res, 200, { locations: locationStatus(Date.now()) });
+    return send(res, 200, { locations: await locationStatus(Date.now()) });
   }
 
   if (method === 'POST' && url.pathname === '/api/orders') {
     limitOrders(clientIp(req));
     const body = await readJson(req);
-    const now = Date.now();
     const locationId = (body as { locationId?: string }).locationId ?? '';
-    const order = buildOrder(body, {
-      now,
-      paused: store.isPaused(locationId),
-      soldOut: store.soldOut(locationId),
-      sequence: nextSequence(store.ordersSince(locationId, now - 36 * 3600_000), now),
+    const order = await serial(async () => {
+      const now = Date.now();
+      const { paused, soldOut } = await store.settings(locationId);
+      const recent = await store.ordersSince(locationId, now - 36 * 3600_000);
+      const order = buildOrder(body, { now, paused, soldOut, sequence: nextSequence(recent, now) });
+      await store.insertOrder(order);
+      return order;
     });
-    store.insertOrder(order);
     broadcast(order.locationId, 'order', publicOrder(order));
     console.log(`[rendelés] ${order.number} ${getLocation(order.locationId).city} ${order.total} Ft`);
     return send(res, 201, { order: publicOrder(order) });
   }
 
   if (parts[1] === 'orders' && parts[2]) {
-    const order = store.getOrder(parts[2]);
-    if (!order) throw new HttpError(404, 'A rendelés nem található');
-    if (method === 'GET' && parts.length === 3) return send(res, 200, { order: publicOrder(order) });
+    const id = parts[2];
+    if (method === 'GET' && parts.length === 3) {
+      const order = await store.getOrder(id);
+      if (!order) throw new HttpError(404, 'A rendelés nem található');
+      return send(res, 200, { order: publicOrder(order) });
+    }
     if (method === 'POST' && parts[3] === 'push-token') {
       const { token } = (await readJson(req)) as { token?: unknown };
       if (typeof token !== 'string' || token.length > 200) throw new HttpError(400, 'Hibás token');
-      order.pushToken = token;
-      store.saveOrder(order);
+      await serial(async () => {
+        const order = await store.getOrder(id);
+        if (!order) throw new HttpError(404, 'A rendelés nem található');
+        order.pushToken = token;
+        await store.saveOrder(order);
+      });
       return send(res, 200, { ok: true });
     }
   }
@@ -180,34 +202,37 @@ async function handleApi(req: IncomingMessage, res: ServerResponse, url: URL) {
     if (typeof pin !== 'string' || !sameSecret(pin, expected)) {
       throw new HttpError(401, 'Hibás PIN kód');
     }
-    return send(res, 200, { token: store.createSession(locationId!), locationId });
+    return send(res, 200, { token: await store.createSession(locationId), locationId });
   }
 
   if (parts[1] !== 'panel') throw new HttpError(404, 'Nincs ilyen végpont');
-  const locationId = panelLocation(req, url);
+  const locationId = await panelLocation(req, url);
 
   if (method === 'GET' && url.pathname === '/api/panel/events') {
     return subscribe(locationId, res);
   }
   if (method === 'POST' && url.pathname === '/api/panel/logout') {
     const header = req.headers.authorization ?? '';
-    store.deleteSession(header.slice(7));
+    await store.deleteSession(header.slice(7));
     return send(res, 200, { ok: true });
   }
   if (method === 'GET' && url.pathname === '/api/panel/orders') {
     const now = Date.now();
+    const [settings, orders] = await Promise.all([
+      store.settings(locationId),
+      store.panelOrders(locationId, now),
+    ]);
     return send(res, 200, {
       location: getLocation(locationId),
-      paused: store.isPaused(locationId),
+      ...settings,
       open: isOpenAt(getLocation(locationId), now),
-      soldOut: store.soldOut(locationId),
       menu: PANEL_MENU,
-      orders: store.panelOrders(locationId, now).map(publicOrder),
+      orders: orders.map(publicOrder),
     });
   }
   if (method === 'POST' && url.pathname === '/api/panel/pause') {
     const { paused } = (await readJson(req)) as { paused?: unknown };
-    store.setPaused(locationId, paused === true);
+    await store.setPaused(locationId, paused === true);
     broadcast(locationId, 'settings', { paused: paused === true });
     return send(res, 200, { paused: paused === true });
   }
@@ -217,72 +242,81 @@ async function handleApi(req: IncomingMessage, res: ServerResponse, url: URL) {
     const now = Date.now();
     if (url.pathname === '/api/panel/export') {
       const from = periodStart(now, PERIODS[period as Period]);
+      const csv = ordersCsv(await store.ordersSince(locationId, from - 1));
       res.writeHead(200, {
         'content-type': 'text/csv; charset=utf-8',
         'content-disposition': `attachment; filename="erdens-rendelesek-${period}.csv"`,
         'cache-control': 'no-store',
       });
-      return void res.end(ordersCsv(store.ordersSince(locationId, from - 1)));
+      return void res.end(csv);
     }
     // Egy évre visszamenőleg nézzük, ki rendelt már korábban is (visszatérő vendég).
-    const history = store.ordersSince(locationId, now - 365 * 24 * 3600_000);
+    const history = await store.ordersSince(locationId, now - 365 * 24 * 3600_000);
     return send(res, 200, computeStats(history, now, period as Period));
   }
   if (method === 'POST' && url.pathname === '/api/panel/sold-out') {
     const body = (await readJson(req)) as { itemId?: unknown; soldOut?: unknown; clear?: unknown };
-    let soldOut: string[];
-    if (body.clear === true) {
-      soldOut = [];
-    } else {
-      const item = getItem(typeof body.itemId === 'string' ? body.itemId : undefined);
-      if (!item) throw new HttpError(400, 'Ismeretlen termék');
-      const rest = store.soldOut(locationId).filter((id) => id !== item.id);
-      soldOut = body.soldOut === true ? [...rest, item.id] : rest;
-    }
-    store.setSoldOut(locationId, soldOut);
+    const item = getItem(typeof body.itemId === 'string' ? body.itemId : undefined);
+    if (body.clear !== true && !item) throw new HttpError(400, 'Ismeretlen termék');
+    const soldOut = await serial(async () => {
+      let next: string[] = [];
+      if (item) {
+        const rest = (await store.settings(locationId)).soldOut.filter((id) => id !== item.id);
+        next = body.soldOut === true ? [...rest, item.id] : rest;
+      }
+      await store.setSoldOut(locationId, next);
+      return next;
+    });
     broadcast(locationId, 'settings', { soldOut });
     return send(res, 200, { soldOut });
   }
 
   if (parts[2] === 'orders' && parts[3] && method === 'POST') {
-    const order = store.getOrder(parts[3]);
-    if (!order || order.locationId !== locationId) throw new HttpError(404, 'A rendelés nem található');
     const body = (await readJson(req)) as { minutes?: unknown; status?: unknown; reason?: unknown };
     const action = parts[4];
-
-    if (action === 'accept') {
-      if (order.status !== 'pending') throw new HttpError(409, 'A rendelést már feldolgozták');
-      const minutes = body.minutes;
-      if (typeof minutes !== 'number' || !Number.isInteger(minutes) || minutes < 5 || minutes > 180) {
-        throw new HttpError(400, 'Hibás elkészülési idő');
+    const order = await serial(async () => {
+      const order = await store.getOrder(parts[3]);
+      if (!order || order.locationId !== locationId) {
+        throw new HttpError(404, 'A rendelés nem található');
       }
-      const readyAt = Date.now() + minutes * 60_000;
-      // Előrendelésnél a vendég által kért időpont marad, ha az később van.
-      if (order.scheduledFor && order.scheduledFor > readyAt) {
-        changeOrder(order, 'accepted', { etaAt: order.scheduledFor });
-      } else {
-        order.statusHistory.push({ status: 'accepted', at: Date.now() });
-        changeOrder(order, 'preparing', { etaAt: readyAt });
-      }
-      return send(res, 200, { order: publicOrder(order) });
-    }
 
-    if (action === 'status') {
-      const status = body.status as OrderStatus;
-      if (!nextStatuses(order.mode, order.status).includes(status)) {
-        throw new HttpError(409, 'Ez a lépés most nem lehetséges');
+      if (action === 'accept') {
+        if (order.status !== 'pending') throw new HttpError(409, 'A rendelést már feldolgozták');
+        const minutes = body.minutes;
+        if (typeof minutes !== 'number' || !Number.isInteger(minutes) || minutes < 5 || minutes > 180) {
+          throw new HttpError(400, 'Hibás elkészülési idő');
+        }
+        const readyAt = Date.now() + minutes * 60_000;
+        // Előrendelésnél a vendég által kért időpont marad, ha az később van.
+        if (order.scheduledFor && order.scheduledFor > readyAt) {
+          await changeOrder(order, 'accepted', { etaAt: order.scheduledFor });
+        } else {
+          order.statusHistory.push({ status: 'accepted', at: Date.now() });
+          await changeOrder(order, 'preparing', { etaAt: readyAt });
+        }
+        return order;
       }
-      changeOrder(order, status);
-      return send(res, 200, { order: publicOrder(order) });
-    }
 
-    if (action === 'reject') {
-      if (isFinal(order.status)) throw new HttpError(409, 'A rendelés már le van zárva');
-      const reason = typeof body.reason === 'string' ? body.reason.trim().slice(0, 200) : '';
-      if (!reason) throw new HttpError(400, 'Add meg az elutasítás okát');
-      changeOrder(order, 'rejected', { rejectReason: reason });
-      return send(res, 200, { order: publicOrder(order) });
-    }
+      if (action === 'status') {
+        const status = body.status as OrderStatus;
+        if (!nextStatuses(order.mode, order.status).includes(status)) {
+          throw new HttpError(409, 'Ez a lépés most nem lehetséges');
+        }
+        await changeOrder(order, status);
+        return order;
+      }
+
+      if (action === 'reject') {
+        if (isFinal(order.status)) throw new HttpError(409, 'A rendelés már le van zárva');
+        const reason = typeof body.reason === 'string' ? body.reason.trim().slice(0, 200) : '';
+        if (!reason) throw new HttpError(400, 'Add meg az elutasítás okát');
+        await changeOrder(order, 'rejected', { rejectReason: reason });
+        return order;
+      }
+
+      throw new HttpError(404, 'Nincs ilyen végpont');
+    });
+    return send(res, 200, { order: publicOrder(order) });
   }
 
   throw new HttpError(404, 'Nincs ilyen végpont');
@@ -322,7 +356,7 @@ const server = createServer(async (req, res) => {
   res.setHeader('referrer-policy', 'no-referrer');
   try {
     if (req.method === 'OPTIONS') return void res.writeHead(204).end();
-    if (url.pathname === '/health') return send(res, 200, { ok: true });
+    if (url.pathname === '/health') return send(res, 200, { ok: true, storage: store.kind });
     if (url.pathname === '/') return void res.writeHead(302, { location: '/panel/' }).end();
     if (url.pathname === '/panel') return void res.writeHead(302, { location: '/panel/' }).end();
     if (url.pathname.startsWith('/panel/')) return await servePanel(res, url.pathname);

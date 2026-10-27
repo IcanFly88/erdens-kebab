@@ -1,7 +1,8 @@
 # Render Blueprint – ingyenes demó tárhely (Frankfurt) a backendnek és az éttermi panelnek.
 # Létrehozás: Render → New → Blueprint → ez a repó. A panel PIN-t a Render ott kéri be.
-# Ingyenes csomagon a szerver 15 perc forgalom nélkül elalszik (ébredés kb. 1 perc), és
-# újraindításkor az adatbázis törlődik – demóhoz megfelelő, élesben fizetős csomag kell.
+# Ingyenes csomagon a szerver 15 perc forgalom nélkül elalszik (ébredés kb. 1 perc). Az adatok a
+# Turso felhős adatbázisban vannak (TURSO_DATABASE_URL + TURSO_AUTH_TOKEN), így az alvás, az
+# újraindítás és az újratelepítés sem törli őket. Nélkülük a szerver helyi, ideiglenes fájlt használ.
 services:
   - type: web
     name: erdens-kebab-demo
@@ -18,4 +19,8 @@ services:
       - key: TRUST_PROXY
         value: "1"
       - key: PANEL_PIN_MONOR
+        sync: false
+      - key: TURSO_DATABASE_URL
+        sync: false
+      - key: TURSO_AUTH_TOKEN
         sync: false
