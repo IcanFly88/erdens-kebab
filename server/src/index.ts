@@ -17,6 +17,8 @@ import { isOpenAt } from './time.ts';
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const PANEL_DIR = join(ROOT, 'panel');
 const PORT = Number(process.env.PORT ?? 4000);
+/** A /health mutatja – így látszik, ha a tárhely újraindította a szervert. */
+const STARTED_AT = new Date().toISOString();
 // Ha be van állítva a Turso (felhős SQLite), oda ír – így az ingyenes tárhely újraindításakor sem
 // vesznek el a rendelések. Különben helyi SQLite fájl (fejlesztéshez).
 const store = await openStore({
@@ -356,7 +358,7 @@ const server = createServer(async (req, res) => {
   res.setHeader('referrer-policy', 'no-referrer');
   try {
     if (req.method === 'OPTIONS') return void res.writeHead(204).end();
-    if (url.pathname === '/health') return send(res, 200, { ok: true, storage: store.kind });
+    if (url.pathname === '/health') return send(res, 200, { ok: true, storage: store.kind, startedAt: STARTED_AT });
     if (url.pathname === '/') return void res.writeHead(302, { location: '/panel/' }).end();
     if (url.pathname === '/panel') return void res.writeHead(302, { location: '/panel/' }).end();
     if (url.pathname.startsWith('/panel/')) return await servePanel(res, url.pathname);
