@@ -1,6 +1,7 @@
-// Étlap. A termékek és változatok az erdenskebap.hu étlapjáról származnak
-// (Pita, Tortilla, Tál, Box · Sima, Feta, Antalya, Istanbul, Falafel · csirke / borjú).
-// Az árak becsültek, az italok példák — élesítés előtt cseréld a valós árlapra!
+// Étlap – a monori üzlet nyomtatott étlapja alapján (2026. október 27.).
+// Kebab Tál, Dürüm (tortilla), Pita: csirke / borjú ár (a borjú +500 Ft), Mix és Falafel fix áron.
+// A tálak ára tartalmazza a választható köretet (hasábburgonya vagy jázmin rizs) és 1 szószt.
+// Ezt a fájlt az app és a szerver is használja: árváltozásnál elég itt módosítani.
 
 export type OptionChoice = { id: string; name: string; price?: number };
 
@@ -34,22 +35,20 @@ const img = (id: string) =>
   `https://images.unsplash.com/photo-${id}?w=600&q=80&auto=format&fit=crop`;
 
 const IMAGES = {
+  tal: img('1771818708792-d671ae9b4b46'),
+  talMix: img('1689151128603-4828c1c2838f'),
+  durum: img('1734468330969-93c69106993f'),
+  durumFries: img('1633321702518-7feccafb94d5'),
   pita: img('1699728088614-7d1d4277414b'),
   pitaFeta: img('1529006557810-274b9b2fc783'),
-  tortilla: img('1734468330969-93c69106993f'),
-  tortillaFries: img('1633321702518-7feccafb94d5'),
-  tal: img('1676471980189-08de3e001215'),
-  talMix: img('1644364935906-792b2245a2c0'),
-  box: img('1771818708792-d671ae9b4b46'),
-  boxLoaded: img('1689151128603-4828c1c2838f'),
   falafel: img('1593001872095-7d5b3868fb1d'),
-  fries: img('1630384060421-cb20d0e0649d'),
-  friesBig: img('1518013431117-eb1465fa5752'),
-  sauces: img('1790000135231-c6638649d30a'),
-  garlic: img('1777199264017-84af9308a41f'),
-  cola: img('1622483767028-3f66f32aef97'),
-  water: img('1523362628745-0c100150b504'),
+  nuggets: img('1627662055487-551888db3aa8'),
+  chiliCheese: img('1788600448499-0cc867441746'),
+  strips: img('1768204039907-77a974159ef0'),
+  friedCheese: img('1778850855907-8fbf7b089621'),
 };
+
+const BEEF_SURCHARGE = 500;
 
 export const OPTION_GROUPS: Record<string, OptionGroup> = {
   meat: {
@@ -59,7 +58,17 @@ export const OPTION_GROUPS: Record<string, OptionGroup> = {
     required: true,
     choices: [
       { id: 'csirke', name: 'Csirkehús' },
-      { id: 'borju', name: 'Borjúhús', price: 400 },
+      { id: 'borju', name: 'Borjúhús', price: BEEF_SURCHARGE },
+    ],
+  },
+  side: {
+    id: 'side',
+    title: 'Köret',
+    type: 'single',
+    required: true,
+    choices: [
+      { id: 'hasab', name: 'Hasábburgonya' },
+      { id: 'rizs', name: 'Jázmin rizs' },
     ],
   },
   sauce: {
@@ -71,31 +80,9 @@ export const OPTION_GROUPS: Record<string, OptionGroup> = {
       { id: 'fokhagymas', name: 'Fokhagymás' },
       { id: 'joghurtos', name: 'Joghurtos' },
       { id: 'csipos', name: 'Csípős' },
-      { id: 'vegyes', name: 'Vegyes (fokhagymás + csípős)' },
-    ],
-  },
-  side: {
-    id: 'side',
-    title: 'Köret',
-    type: 'single',
-    required: true,
-    choices: [
-      { id: 'hasab', name: 'Hasábburgonya' },
-      { id: 'rizs', name: 'Rizs' },
-      { id: 'fele', name: 'Fele-fele' },
-    ],
-  },
-  extras: {
-    id: 'extras',
-    title: 'Extrák',
-    type: 'multi',
-    max: 4,
-    choices: [
-      { id: 'extra-hus', name: 'Extra hús', price: 700 },
-      { id: 'extra-feta', name: 'Extra feta', price: 350 },
-      { id: 'hasab-bele', name: 'Hasábburgonya bele', price: 300 },
-      { id: 'jalapeno', name: 'Jalapeño', price: 250 },
-      { id: 'kukorica', name: 'Kukorica', price: 200 },
+      { id: 'ketchup', name: 'Ketchup' },
+      { id: 'majonez', name: 'Majonéz' },
+      { id: 'barbecue', name: 'Barbecue' },
     ],
   },
   remove: {
@@ -104,76 +91,59 @@ export const OPTION_GROUPS: Record<string, OptionGroup> = {
     type: 'multi',
     choices: [
       { id: 'no-hagyma', name: 'Hagyma nélkül' },
-      { id: 'no-paradicsom', name: 'Paradicsom nélkül' },
-      { id: 'no-uborka', name: 'Uborka nélkül' },
       { id: 'no-kaposzta', name: 'Káposzta nélkül' },
-    ],
-  },
-  dip: {
-    id: 'dip',
-    title: 'Kérsz mellé szószt?',
-    type: 'multi',
-    max: 3,
-    choices: [
-      { id: 'dip-fokhagymas', name: 'Fokhagymás szósz', price: 250 },
-      { id: 'dip-csipos', name: 'Csípős szósz', price: 250 },
-      { id: 'dip-ketchup', name: 'Ketchup', price: 250 },
-      { id: 'dip-majonez', name: 'Majonéz', price: 250 },
+      { id: 'no-paradicsom', name: 'Paradicsom nélkül' },
     ],
   },
 };
 
 export const CATEGORIES: Category[] = [
-  { id: 'box', name: 'Kebab Box', subtitle: 'Hasábburgonya ágyon, bőséges hússal és szósszal' },
-  { id: 'pita', name: 'Pita', subtitle: 'Frissen sült pitában, ropogós zöldségekkel' },
-  { id: 'tortilla', name: 'Tortilla', subtitle: 'Tortillába tekerve – a klasszikus dürüm' },
-  { id: 'tal', name: 'Tál', subtitle: 'Hús, köret, saláta és szósz egy tányéron' },
-  { id: 'koretek', name: 'Köretek' },
-  { id: 'szoszok', name: 'Szószok' },
-  { id: 'italok', name: 'Italok' },
+  {
+    id: 'tal',
+    name: 'Kebab Tál',
+    subtitle: 'Köret (hasábburgonya vagy jázmin rizs), friss zöldségek és 1 szósz az árban',
+  },
+  { id: 'durum', name: 'Dürüm', subtitle: 'Tortillába tekerve, friss zöldségekkel' },
+  { id: 'pita', name: 'Pita', subtitle: 'Frissen sült pitában, friss zöldségekkel' },
+  {
+    id: 'ropogos',
+    name: 'Ropogós Falatok',
+    subtitle: 'Tálak köret (hasábburgonya vagy jázmin rizs) és 1 szósz árával',
+  },
 ];
 
-type Variant = { key: string; name: string; extra: string; delta: number; vega?: boolean };
+/** Egy étlapsor: a `price` a csirkés ár (Mix és Falafel esetén a fix ár). */
+type Row = { key: string; name: string; price: number; extra?: string; fixed?: 'mix' | 'falafel' };
 
-const VARIANTS: Variant[] = [
-  { key: 'sima', name: 'Sima', extra: '', delta: 0 },
-  { key: 'feta', name: 'Feta', extra: 'feta sajttal', delta: 300 },
-  { key: 'antalya', name: 'Antalya', extra: 'ananásszal és kukoricával', delta: 300 },
-  { key: 'istanbul', name: 'Istanbul', extra: 'paprikával, kukoricával és fetával', delta: 500 },
-  { key: 'falafel', name: 'Falafel', extra: '', delta: 0, vega: true },
-];
-
-const BASE = 'saláta, paradicsom, uborka, lilahagyma';
-
-function variantItems(
+function kebabItems(
   categoryId: string,
   label: string,
-  basePrice: number,
+  rows: Row[],
   images: [string, string],
-  options: { withSide?: boolean; variants?: Variant[]; popular?: string[]; lead?: string } = {},
+  options: { withSide?: boolean; popular?: string[] } = {},
 ): MenuItem[] {
-  const variants = options.variants ?? VARIANTS;
-  return variants.map((v, i) => {
-    const meatPart = v.vega ? 'ropogós csicseriborsó-falafel' : 'csirke- vagy borjúhús';
-    const extraPart = v.extra ? `, ${v.extra}` : '';
-    const sidePart = options.withSide ? ', választható köret' : '';
-    const text = `${meatPart}${extraPart}, ${BASE}${sidePart}.`;
+  return rows.map((r, i) => {
+    const filling =
+      r.fixed === 'falafel'
+        ? 'Ropogós falafel'
+        : r.fixed === 'mix'
+          ? 'Csirke- és borjúhús vegyesen'
+          : 'Csirke- vagy borjúhús';
+    const extra = r.extra ? `, ${r.extra}` : '';
+    const side = options.withSide ? ', választható köret és 1 szósz' : ', szósz';
     return {
-      id: `${categoryId}-${v.key}`,
+      id: `${categoryId}-${r.key}`,
       categoryId,
-      name: `${v.name} ${label}`,
-      description: options.lead
-        ? `${options.lead} ${text}`
-        : `${text.charAt(0).toUpperCase()}${text.slice(1)}`,
-      price: basePrice + v.delta,
-      image: v.vega ? IMAGES.falafel : images[i % 2],
-      popular: options.popular?.includes(v.key),
-      tags: v.vega ? ['vega'] : undefined,
+      name: `${r.name} ${label}`,
+      description: `${filling}${extra}, friss zöldségek${side}.`,
+      price: r.price,
+      image: r.fixed === 'falafel' ? IMAGES.falafel : images[i % 2],
+      popular: options.popular?.includes(r.key),
+      tags: r.fixed === 'falafel' ? ['vega'] : undefined,
       optionGroups: [
-        ...(v.vega ? [] : ['meat']),
+        ...(r.fixed ? [] : ['meat']),
         ...(options.withSide ? ['side'] : []),
         'sauce',
-        'extras',
         'remove',
       ],
     };
@@ -181,89 +151,85 @@ function variantItems(
 }
 
 export const MENU: MenuItem[] = [
-  ...variantItems('box', 'Box', 2790, [IMAGES.box, IMAGES.boxLoaded], {
-    variants: VARIANTS.filter((v) => !v.vega),
-    popular: ['istanbul', 'sima'],
-    lead: 'Hasábburgonya ágyon:',
-  }),
-  ...variantItems('pita', 'pita', 2290, [IMAGES.pita, IMAGES.pitaFeta], { popular: ['feta'] }),
-  ...variantItems('tortilla', 'tortilla', 2490, [IMAGES.tortilla, IMAGES.tortillaFries], {
-    popular: ['antalya'],
-  }),
-  ...variantItems('tal', 'tál', 3290, [IMAGES.tal, IMAGES.talMix], { withSide: true }),
-  {
-    id: 'hasab-kicsi',
-    categoryId: 'koretek',
-    name: 'Hasábburgonya (kis adag)',
-    description: 'Ropogós, aranybarna hasábburgonya.',
-    price: 890,
-    image: IMAGES.fries,
-    optionGroups: ['dip'],
-  },
-  {
-    id: 'hasab-nagy',
-    categoryId: 'koretek',
-    name: 'Hasábburgonya (nagy adag)',
-    description: 'Ropogós, aranybarna hasábburgonya – nagy adag.',
-    price: 1290,
-    image: IMAGES.friesBig,
-    optionGroups: ['dip'],
-  },
-  ...[
-    ['fokhagymas', 'Fokhagymás szósz', 'A ház kedvence, krémes fokhagymás szósz.', IMAGES.garlic],
-    ['joghurtos', 'Joghurtos szósz', 'Friss, enyhe joghurtos szósz.', IMAGES.garlic],
-    ['csipos', 'Csípős szósz', 'Tüzes, paprikás csípős szósz.', IMAGES.sauces],
-    ['barbecue', 'Barbecue szósz', 'Füstös, édeskés BBQ szósz.', IMAGES.sauces],
-    ['ketchup', 'Ketchup', '', undefined],
-    ['majonez', 'Majonéz', '', undefined],
-  ].map(
-    ([key, name, description, image]): MenuItem => ({
-      id: `szosz-${key}`,
-      categoryId: 'szoszok',
-      name: name!,
-      description: description ?? '',
-      price: 250,
-      image,
-      tags: key === 'csipos' ? ['csípős'] : undefined,
-    }),
+  ...kebabItems(
+    'tal',
+    'tál',
+    [
+      { key: 'sima', name: 'Sima', price: 3380 },
+      { key: 'feta', name: 'Feta', price: 3780, extra: 'feta' },
+      { key: 'antalya', name: 'Antalya', price: 3780, extra: 'ananász, kukorica' },
+      { key: 'istanbul', name: 'Istanbul', price: 4180, extra: 'paprika, kukorica, feta' },
+      { key: 'mix', name: 'Mix', price: 3780, fixed: 'mix' },
+      { key: 'falafel', name: 'Falafel', price: 3280, fixed: 'falafel' },
+    ],
+    [IMAGES.tal, IMAGES.talMix],
+    { withSide: true, popular: ['sima', 'istanbul'] },
+  ),
+  ...kebabItems(
+    'durum',
+    'dürüm',
+    [
+      { key: 'sima', name: 'Sima', price: 2480 },
+      { key: 'feta', name: 'Feta', price: 2880, extra: 'feta' },
+      { key: 'antalya', name: 'Antalya', price: 2680, extra: 'ananász, kukorica' },
+      { key: 'istanbul', name: 'Istanbul', price: 3280, extra: 'paprika, kukorica, feta' },
+      { key: 'mix', name: 'Mix', price: 2880, fixed: 'mix' },
+      { key: 'falafel', name: 'Falafel', price: 2380, fixed: 'falafel' },
+    ],
+    [IMAGES.durum, IMAGES.durumFries],
+    { popular: ['feta'] },
+  ),
+  ...kebabItems(
+    'pita',
+    'pita',
+    [
+      { key: 'sima', name: 'Sima', price: 2380 },
+      { key: 'feta', name: 'Feta', price: 2780, extra: 'feta' },
+      { key: 'antalya', name: 'Antalya', price: 2780, extra: 'ananász, kukorica' },
+      { key: 'istanbul', name: 'Istanbul', price: 3180, extra: 'paprika, kukorica, feta' },
+      { key: 'mix', name: 'Mix', price: 2780, fixed: 'mix' },
+      { key: 'falafel', name: 'Falafel', price: 2280, fixed: 'falafel' },
+    ],
+    [IMAGES.pita, IMAGES.pitaFeta],
+    { popular: ['sima'] },
   ),
   {
-    id: 'cola',
-    categoryId: 'italok',
-    name: 'Coca-Cola 0,33 l',
-    description: 'Dobozos üdítő.',
-    price: 590,
-    image: IMAGES.cola,
+    id: 'ropogos-nuggets',
+    categoryId: 'ropogos',
+    name: 'Classic Nuggets tál',
+    description: 'Gyerekeknek is. Csirke nuggets, választható köret és 1 szósz.',
+    price: 1880,
+    image: IMAGES.nuggets,
+    popular: true,
+    optionGroups: ['side', 'sauce'],
   },
   {
-    id: 'cola-zero',
-    categoryId: 'italok',
-    name: 'Coca-Cola Zero 0,33 l',
-    description: 'Dobozos üdítő, cukormentes.',
-    price: 590,
-    image: IMAGES.cola,
+    id: 'ropogos-chili-cheese',
+    categoryId: 'ropogos',
+    name: 'Chili Cheese Nuggets tál',
+    description: 'Csípős-sajtos falatok, választható köret és 1 szósz.',
+    price: 1880,
+    image: IMAGES.chiliCheese,
+    tags: ['csípős'],
+    optionGroups: ['side', 'sauce'],
   },
   {
-    id: 'fanta',
-    categoryId: 'italok',
-    name: 'Fanta narancs 0,33 l',
-    description: 'Dobozos üdítő.',
-    price: 590,
+    id: 'ropogos-csirkemell',
+    categoryId: 'ropogos',
+    name: 'Rántott csirkemell csíkok tál',
+    description: 'Ropogós csirkemell csíkok, választható köret és 1 szósz.',
+    price: 2980,
+    image: IMAGES.strips,
+    optionGroups: ['side', 'sauce'],
   },
   {
-    id: 'ayran',
-    categoryId: 'italok',
-    name: 'Ayran 0,25 l',
-    description: 'Hűsítő török joghurtital – a kebab legjobb barátja.',
-    price: 490,
-  },
-  {
-    id: 'viz',
-    categoryId: 'italok',
-    name: 'Ásványvíz 0,5 l',
-    description: 'Szénsavas vagy mentes.',
-    price: 450,
-    image: IMAGES.water,
+    id: 'ropogos-sajt',
+    categoryId: 'ropogos',
+    name: 'Rántott sajt tál',
+    description: 'Rántott sajt, választható köret és 1 szósz.',
+    price: 2680,
+    image: IMAGES.friedCheese,
+    optionGroups: ['side', 'sauce'],
   },
 ];
 
@@ -293,7 +259,7 @@ export function unitPrice(item: MenuItem, selections: Selections): number {
   }, item.price);
 }
 
-/** Pl. "Borjúhús · Fokhagymás · Extra feta" */
+/** Pl. "Borjúhús · Hasábburgonya · Fokhagymás" */
 export function describeSelections(item: MenuItem, selections: Selections): string {
   return groupsFor(item)
     .flatMap((group) =>
@@ -304,6 +270,18 @@ export function describeSelections(item: MenuItem, selections: Selections): stri
 
 export function missingRequired(item: MenuItem, selections: Selections): OptionGroup | undefined {
   return groupsFor(item).find((g) => g.required && !(selections[g.id]?.length));
+}
+
+/** Csak az étlapon ma is létező opciókat tartja meg (pl. régebbi kosárból vagy rendelésből). */
+export function sanitizeSelections(item: MenuItem, selections: Selections): Selections {
+  const clean: Selections = {};
+  for (const group of groupsFor(item)) {
+    const valid = (selections[group.id] ?? []).filter((id) =>
+      group.choices.some((c) => c.id === id),
+    );
+    if (valid.length) clean[group.id] = valid;
+  }
+  return clean;
 }
 
 export function searchMenu(query: string): MenuItem[] {

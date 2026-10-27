@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, use, useEffect, useReducer, type ReactNode } from 'react';
 
 import { getLocation, LOCATIONS, type Location, type LocationId } from '@/data/locations';
-import { getItem, unitPrice, type Selections } from '@/data/menu';
+import { getItem, sanitizeSelections, unitPrice, type Selections } from '@/data/menu';
 import { newId } from '@/lib/format';
 import type { Address, Mode, Order } from '@/lib/order-status';
 
@@ -83,10 +83,16 @@ function reducer(state: State, action: Action): State {
       const locationId = saved && isLocationId(saved) ? saved : LOCATIONS[0].id;
       const zones = getLocation(locationId).deliveryZones;
       const address = action.state.address ?? state.address;
+      // Az étlap változhat: a már nem létező tételeket és opciókat kivesszük a mentett kosárból.
+      const cart = (action.state.cart ?? []).flatMap((l) => {
+        const item = getItem(l.itemId);
+        return item ? [{ ...l, selections: sanitizeSelections(item, l.selections) }] : [];
+      });
       return {
         ...state,
         ...action.state,
         orders,
+        cart,
         locationId,
         address: zones.some((z) => z.town === address.town)
           ? address
@@ -128,18 +134,16 @@ function reducer(state: State, action: Action): State {
       return {
         ...state,
         locationId: isLocationId(order.locationId) ? order.locationId : state.locationId,
-        cart: order.lines
-          .filter((l) => getItem(l.itemId))
-          .reduce(
-            (cart, l) =>
-              addOrMerge(cart, {
-                itemId: l.itemId,
-                qty: l.qty,
-                selections: l.selections,
-                note: l.note,
-              }),
-            state.cart,
-          ),
+        cart: order.lines.reduce((cart, l) => {
+          const item = getItem(l.itemId);
+          if (!item) return cart;
+          return addOrMerge(cart, {
+            itemId: l.itemId,
+            qty: l.qty,
+            selections: sanitizeSelections(item, l.selections),
+            note: l.note,
+          });
+        }, state.cart),
       };
     }
     case 'setPushToken':

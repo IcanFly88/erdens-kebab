@@ -151,20 +151,21 @@ Nyisd meg a `https://<szerver>/panel/` címet a pult melletti tableten, lépj be
 
 ## Amit élesítés előtt egyeztetni kell az étteremmel
 
-Az adatok forrása: erdenskebap.hu (étlap-szerkezet, színek), @erdenskebab TikTok (címek),
-online cégjegyzékek (Monor telefonszám, nyitvatartás). **Nyilvános árlapot nem találtam**, ezért:
+Az étlap és az árak a monori üzlet nyomtatott étlapjáról származnak (2026. október 27.). Egyéb adatok:
+erdenskebap.hu (színek), @erdenskebab TikTok (cím), online cégjegyzékek (telefonszám, nyitvatartás).
+Még egyeztetni kell:
 
 | Mit | Hol | Állapot |
 | --- | --- | --- |
-| Árak, felárak | `src/data/menu.ts` | becsült |
-| Italok | `src/data/menu.ts` | példa |
+| Italok, külön köretek és szószok | `src/data/menu.ts` | nincsenek az étlapon – ha árulják, fel kell venni |
+| Szószválaszték | `src/data/menu.ts` | a weboldal listája alapján, ellenőrizni kell |
 | Szállítási díjak, zónák, minimum | `src/data/locations.ts` | becsült |
 | Nyitvatartás | `src/data/locations.ts` | cégjegyzékből, ellenőrizni kell |
 | Ételfotók | Unsplash (ingyenes licenc) | cserélendő saját fotókra |
 | Logó | „EK” monogram (`assets/images`) | cserélendő a hivatalos logóra |
 
 Az étlapot és az éttermi adatokat **az app és a szerver ugyanabból a fájlból olvassa**, így elég
-egy helyen módosítani – utána a szervert újra kell indítani és új app buildet kiadni (vagy `eas update`).
+egy helyen módosítani – utána a szerver a GitHub-push után magától újratelepül, az apphoz új build kell.
 
 ## Még nincs benne
 

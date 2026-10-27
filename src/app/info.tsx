@@ -29,7 +29,7 @@ export default function InfoScreen() {
           {RESTAURANT.name.toUpperCase()}
         </T>
         <T color={Colors.textMuted}>
-          Török kebab Monoron: pita, tortilla, tál és box – csirke- vagy borjúhússal,
+          Török kebab Monoron: kebab tál, dürüm és pita – csirke- vagy borjúhússal,
           illetve falafellel.
         </T>
       </View>

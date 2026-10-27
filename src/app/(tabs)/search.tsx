@@ -14,7 +14,7 @@ import { openProduct, useQuickAdd } from '@/lib/use-quick-add';
 import { useStatusBarStyle } from '@/lib/use-status-bar';
 import { useApp } from '@/store/app-store';
 
-const SUGGESTIONS = ['Box', 'Feta', 'Istanbul', 'Falafel', 'Borjú', 'Hasábburgonya', 'Ayran'];
+const SUGGESTIONS = ['Tál', 'Dürüm', 'Istanbul', 'Mix', 'Falafel', 'Nuggets', 'Rántott sajt'];
 
 export default function SearchScreen() {
   const insets = useSafeAreaInsets();
@@ -72,7 +72,7 @@ export default function SearchScreen() {
           <EmptyState
             icon="search-outline"
             title="Nincs találat"
-            text={`A(z) „${query.trim()}” keresésre nincs találat. Próbáld pl. így: „box” vagy „csípős”.`}
+            text={`A(z) „${query.trim()}” keresésre nincs találat. Próbáld pl. így: „tál” vagy „feta”.`}
           />
         )
       ) : (

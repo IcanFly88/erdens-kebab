@@ -19,7 +19,7 @@ import { openProduct, useQuickAdd } from '@/lib/use-quick-add';
 import { useStatusBarStyle } from '@/lib/use-status-bar';
 import { deliveryZone, useApp } from '@/store/app-store';
 
-const UPSELL_IDS = ['hasab-kicsi', 'ayran', 'szosz-fokhagymas', 'cola', 'szosz-csipos'];
+const UPSELL_IDS = ['ropogos-nuggets', 'ropogos-sajt', 'ropogos-chili-cheese', 'pita-falafel'];
 
 export default function CartScreen() {
   const insets = useSafeAreaInsets();
@@ -47,7 +47,7 @@ export default function CartScreen() {
         <EmptyState
           icon="bag-outline"
           title="A kosarad üres"
-          text="Nézz körül az étlapon – a Box és a Feta pita a vendégek kedvence."
+          text="Nézz körül az étlapon – a Kebab tál és a Feta dürüm a vendégek kedvence."
           action={<Button title="Vissza az étlaphoz" onPress={() => router.back()} style={styles.cta} />}
         />
       </View>
