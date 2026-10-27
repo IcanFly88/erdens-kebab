@@ -137,6 +137,11 @@ EXPO_PUBLIC_API_URL=https://rendeles.erdenskebap.hu
 
 Majd: `npx eas-cli@latest build --profile production` és `npx eas-cli@latest submit`.
 
+Az app a saját fejlesztői fiókunkon (Team `8GZ6FU7RBK`) jelenik meg az App Store-ban. Mivel az étterem
+nevét és arculatát használja, az App Review kérhet erről engedélyt: legyen meg az étteremtől egy
+írásos hozzájárulás a név és a logó használatához, és az App Review megjegyzésben jelezd, hogy a
+megbízásukra készült.
+
 ### Éttermi panel
 
 Nyisd meg a `https://<szerver>/panel/` címet a pult melletti tableten, lépj be, és koppints a
