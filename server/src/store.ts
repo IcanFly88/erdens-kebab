@@ -30,9 +30,15 @@ export function createStore(path: string) {
     );
     CREATE TABLE IF NOT EXISTS settings (
       location_id TEXT PRIMARY KEY,
-      paused INTEGER NOT NULL DEFAULT 0
+      paused INTEGER NOT NULL DEFAULT 0,
+      sold_out TEXT NOT NULL DEFAULT '[]'
     );
   `);
+  // Korábbi adatbázisban még nincs elfogyott termék oszlop.
+  const settingsColumns = db.prepare('PRAGMA table_info(settings)').all() as { name: string }[];
+  if (!settingsColumns.some((c) => c.name === 'sold_out')) {
+    db.exec(`ALTER TABLE settings ADD COLUMN sold_out TEXT NOT NULL DEFAULT '[]'`);
+  }
 
   const parse = (row: unknown) => JSON.parse((row as { data: string }).data) as StoredOrder;
 
@@ -97,6 +103,20 @@ export function createStore(path: string) {
         `INSERT INTO settings (location_id, paused) VALUES (?, ?)
          ON CONFLICT(location_id) DO UPDATE SET paused = excluded.paused`,
       ).run(locationId, paused ? 1 : 0);
+    },
+
+    /** A panelen elfogyottnak jelölt termékek azonosítói. */
+    soldOut(locationId: string): string[] {
+      const row = db.prepare('SELECT sold_out FROM settings WHERE location_id = ?').get(locationId) as
+        | { sold_out: string }
+        | undefined;
+      return row ? (JSON.parse(row.sold_out) as string[]) : [];
+    },
+    setSoldOut(locationId: string, itemIds: string[]) {
+      db.prepare(
+        `INSERT INTO settings (location_id, sold_out) VALUES (?, ?)
+         ON CONFLICT(location_id) DO UPDATE SET sold_out = excluded.sold_out`,
+      ).run(locationId, JSON.stringify(itemIds));
     },
 
     close() {

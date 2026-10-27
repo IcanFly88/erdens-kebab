@@ -30,6 +30,7 @@ import {
   type Selections,
 } from '@/data/menu';
 import { formatPrice } from '@/lib/format';
+import { useSoldOut } from '@/lib/use-restaurant-status';
 import { useStatusBarStyle } from '@/lib/use-status-bar';
 import { useApp } from '@/store/app-store';
 
@@ -39,6 +40,7 @@ export default function ProductScreen() {
   const { cart, dispatch } = useApp();
   const item = getItem(id);
   const existing = line ? cart.find((l) => l.key === line) : undefined;
+  const soldOut = useSoldOut();
 
   const [selections, setSelections] = useState<Selections>(existing?.selections ?? {});
   const [qty, setQty] = useState(existing?.qty ?? 1);
@@ -62,6 +64,8 @@ export default function ProductScreen() {
   const groups = groupsFor(item);
   const missing = missingRequired(item, selections);
   const total = unitPrice(item, selections) * qty;
+  // Már kosárban lévő tételt menteni még lehet (a kosár jelzi, hogy ki kell venni).
+  const unavailable = soldOut.has(item.id) && !existing;
 
   const toggle = (group: OptionGroup, choiceId: string) => {
     setHighlight(null);
@@ -208,10 +212,19 @@ export default function ProductScreen() {
       <View style={[styles.footer, { paddingBottom: insets.bottom + 12 }]}>
         <Stepper value={qty} onChange={setQty} />
         <Button
-          title={existing ? 'Mentés' : missing ? `Válassz: ${missing.title.toLowerCase()}` : 'Kosárba'}
+          title={
+            unavailable
+              ? 'Elfogyott'
+              : existing
+                ? 'Mentés'
+                : missing
+                  ? `Válassz: ${missing.title.toLowerCase()}`
+                  : 'Kosárba'
+          }
           trailing={formatPrice(total)}
           onPress={submit}
-          variant={missing ? 'dark' : 'primary'}
+          disabled={unavailable}
+          variant={missing || unavailable ? 'dark' : 'primary'}
           style={styles.flex}
         />
       </View>

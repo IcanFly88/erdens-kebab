@@ -13,7 +13,7 @@ import { T } from '@/components/ui/text';
 import { Colors, Radius } from '@/constants/theme';
 import { getLocation } from '@/data/locations';
 import { api } from '@/lib/api';
-import { formatDayTime, formatPrice, formatTime } from '@/lib/format';
+import { formatDayTime, formatFee, formatPrice, formatTime } from '@/lib/format';
 import { setupNotifications } from '@/lib/notifications';
 import {
   isFinal,
@@ -270,8 +270,11 @@ export default function OrderScreen() {
           ))}
           <Divider />
           <SummaryRow label="Részösszeg" value={formatPrice(order.subtotal)} />
+          {order.packagingFee ? (
+            <SummaryRow label="Csomagolás" value={formatPrice(order.packagingFee)} />
+          ) : null}
           {isDelivery ? (
-            <SummaryRow label="Szállítási díj" value={formatPrice(order.deliveryFee)} />
+            <SummaryRow label="Szállítási díj" value={formatFee(order.deliveryFee)} />
           ) : null}
           {order.tip ? <SummaryRow label="Borravaló" value={formatPrice(order.tip)} /> : null}
           <SummaryRow label="Összesen" value={formatPrice(order.total)} strong />

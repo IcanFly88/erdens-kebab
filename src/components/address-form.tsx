@@ -4,7 +4,7 @@ import { Field } from '@/components/ui/field';
 import { T } from '@/components/ui/text';
 import { Colors, Radius } from '@/constants/theme';
 import type { Location } from '@/data/locations';
-import { formatPrice } from '@/lib/format';
+import { formatFee } from '@/lib/format';
 import type { Address } from '@/lib/order-status';
 
 type Props = {
@@ -34,7 +34,7 @@ export function AddressForm({ location, value, onChange, streetError }: Props) {
                   {z.town}
                 </T>
                 <T variant="caption" color={active ? Colors.white : Colors.textMuted}>
-                  {formatPrice(z.fee)}
+                  {formatFee(z.fee)}
                 </T>
               </Pressable>
             );

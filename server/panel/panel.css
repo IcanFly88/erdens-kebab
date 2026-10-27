@@ -490,3 +490,419 @@ dialog h2 {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
   z-index: 20;
 }
+
+/* --- nézetváltó a fejlécben --- */
+.tabs {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+}
+.tabs button {
+  font: inherit;
+  font-weight: 600;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: rgba(255, 255, 255, 0.72);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.tabs button.active {
+  background: #fff;
+  color: var(--ink);
+}
+.tabs .count {
+  background: var(--brand);
+}
+.tabs .count.warn {
+  background: var(--danger);
+}
+
+.view {
+  padding: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.view-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 4px 0 16px;
+}
+.view-head h2 {
+  margin: 0;
+  font-size: 20px;
+}
+.view-head p {
+  margin: 4px 0 0;
+}
+.small {
+  font-size: 13px;
+}
+
+/* --- késés, várakozás, blokk gomb --- */
+.card.late {
+  border-color: var(--danger);
+}
+.eta.late {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.age.warn {
+  color: var(--danger);
+  font-weight: 700;
+}
+.head-right {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.head-right .age {
+  margin-left: 0;
+}
+.icon-btn {
+  font-size: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  cursor: pointer;
+}
+.icon-btn:active {
+  transform: scale(0.95);
+}
+
+/* --- étlap: elérhetőség --- */
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+.menu-cat {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.menu-cat h3 {
+  margin: 0;
+  padding: 12px 14px;
+  font-size: 15px;
+  background: var(--brand-soft);
+  color: var(--brand-dark);
+}
+.menu-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto 72px auto;
+  gap: 12px;
+  align-items: center;
+  min-height: 54px;
+  padding: 8px 14px;
+  border-top: 1px solid var(--border);
+  cursor: pointer;
+}
+.menu-row .name {
+  font-weight: 600;
+}
+.menu-row .price {
+  color: var(--muted);
+  font-size: 14px;
+}
+.menu-row .state {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--success);
+  text-align: right;
+}
+.menu-row.out {
+  background: var(--danger-soft);
+}
+.menu-row.out .name {
+  color: var(--danger);
+  text-decoration: line-through;
+}
+.menu-row.out .state {
+  color: var(--danger);
+}
+.menu-row .switch input:not(:checked) + .track {
+  background: #c9c3bb;
+}
+
+/* --- kimutatás --- */
+.segmented {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 12px;
+  background: var(--border);
+}
+.segmented button {
+  font: inherit;
+  font-weight: 600;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.segmented button.active {
+  background: var(--card);
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.kpi {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+.kpi .label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.kpi .value {
+  font-size: 26px;
+  font-weight: 700;
+  margin-top: 4px;
+}
+.kpi .sub {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  margin: 2px 0 0;
+}
+.kpi.hero {
+  grid-column: span 2;
+}
+.kpi.hero .value {
+  font-size: 48px;
+  line-height: 1.1;
+}
+@media (max-width: 560px) {
+  .kpi.hero {
+    grid-column: auto;
+  }
+  .kpi.hero .value {
+    font-size: 36px;
+  }
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.panel-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  min-width: 0;
+}
+.panel-card.wide {
+  grid-column: 1 / -1;
+}
+.panel-card h3 {
+  margin: 0 0 14px;
+  font-size: 15px;
+}
+
+/* vízszintes sávok (termékek, átvétel, fizetés) */
+.bars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.bars li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px 12px;
+  font-weight: 600;
+  font-size: 14px;
+}
+.bars .qty {
+  color: var(--muted);
+  font-weight: 500;
+}
+.bars .bar {
+  grid-column: 1 / -1;
+  height: 12px;
+}
+.bars .bar.zero span {
+  display: none;
+}
+.bars li.split {
+  margin-top: 6px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.bars .bar span {
+  display: block;
+  height: 100%;
+  min-width: 4px;
+  background: var(--brand);
+  border-radius: 0 4px 4px 0;
+}
+
+/* oszlopdiagram (naponta, óránként) */
+.chart {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  height: 180px;
+}
+.chart .c {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.chart .col {
+  flex: 1;
+  align-self: stretch;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.chart .b {
+  width: min(24px, 100%);
+  min-height: 1px;
+  background: var(--brand);
+  border-radius: 4px 4px 0 0;
+}
+.chart .c.zero .b {
+  background: var(--border);
+}
+.chart .n {
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--text);
+  min-height: 15px;
+}
+.chart .t {
+  align-self: stretch;
+  border-top: 1px solid var(--border);
+  padding-top: 4px;
+  text-align: center;
+  white-space: nowrap;
+}
+.chart .c:hover .b {
+  background: var(--brand-dark);
+}
+.chart .c:hover::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% - 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  background: var(--ink);
+  color: #fff;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  z-index: 2;
+  pointer-events: none;
+}
+.chart .c:first-child:hover::after {
+  left: 0;
+  transform: none;
+}
+.chart .c:last-child:hover::after {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+/* --- konyhai blokk nyomtatása --- */
+#print-area {
+  display: none;
+}
+@media print {
+  @page {
+    size: 80mm auto;
+    margin: 3mm;
+  }
+  html,
+  body {
+    background: #fff;
+  }
+  body > *:not(#print-area) {
+    display: none !important;
+  }
+  #print-area {
+    display: block;
+    width: 72mm;
+    font: 12px/1.35 'Courier New', ui-monospace, monospace;
+    color: #000;
+  }
+  .t-center {
+    text-align: center;
+  }
+  .t-brand {
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.1em;
+  }
+  .t-big {
+    font-size: 16px;
+  }
+  .t-sep {
+    border-top: 1px dashed #000;
+    margin: 6px 0;
+  }
+  .t-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .t-line {
+    margin-bottom: 4px;
+  }
+  .t-sub {
+    padding-left: 12px;
+  }
+}
+
+/* Tableten (fekvő) a fejléc egy sorban maradjon: a márkanév elég, az üzlet neve a belépésnél látszik. */
+@media (max-width: 1400px) {
+  .topbar .location {
+    display: none;
+  }
+  .topbar {
+    gap: 10px;
+  }
+}
+@media (max-width: 1100px) {
+  .topbar .brand {
+    display: none;
+  }
+}

@@ -10,17 +10,21 @@ import { formatPrice } from '@/lib/format';
 type Props = {
   item: MenuItem;
   qtyInCart: number;
+  /** A panelen elfogyottnak jelölve: látszik, de nem rendelhető. */
+  soldOut?: boolean;
   onPress: () => void;
   onAdd: () => void;
 };
 
-export function MenuItemRow({ item, qtyInCart, onPress, onAdd }: Props) {
+export function MenuItemRow({ item, qtyInCart, soldOut, onPress, onAdd }: Props) {
   return (
     <Pressable
       onPress={onPress}
+      disabled={soldOut}
       style={({ pressed }) => [styles.row, pressed && styles.pressed]}
       accessibilityRole="button"
-      accessibilityLabel={`${item.name}, ${formatPrice(item.price)}`}>
+      accessibilityState={{ disabled: soldOut }}
+      accessibilityLabel={`${item.name}, ${soldOut ? 'elfogyott' : formatPrice(item.price)}`}>
       <View style={styles.text}>
         <View style={styles.titleRow}>
           {qtyInCart > 0 ? (
@@ -30,7 +34,11 @@ export function MenuItemRow({ item, qtyInCart, onPress, onAdd }: Props) {
               </T>
             </View>
           ) : null}
-          <T variant="h3" numberOfLines={2} style={styles.flex}>
+          <T
+            variant="h3"
+            numberOfLines={2}
+            color={soldOut ? Colors.textMuted : undefined}
+            style={styles.flex}>
             {item.name}
           </T>
         </View>
@@ -40,7 +48,10 @@ export function MenuItemRow({ item, qtyInCart, onPress, onAdd }: Props) {
           </T>
         ) : null}
         <View style={styles.metaRow}>
-          <T variant="bodyStrong">{formatPrice(item.price)}</T>
+          <T variant="bodyStrong" color={soldOut ? Colors.textMuted : undefined}>
+            {formatPrice(item.price)}
+          </T>
+          {soldOut ? <Tag icon="close-circle" label="Elfogyott" color={Colors.danger} /> : null}
           {item.tags?.includes('vega') ? <Tag icon="leaf" label="Vega" color={Colors.success} /> : null}
           {item.tags?.includes('csípős') ? (
             <Tag icon="flame" label="Csípős" color={Colors.danger} />
@@ -48,7 +59,7 @@ export function MenuItemRow({ item, qtyInCart, onPress, onAdd }: Props) {
           {item.popular ? <Tag icon="star" label="Népszerű" color={Colors.brandDark} /> : null}
         </View>
       </View>
-      <View style={styles.imageWrap}>
+      <View style={[styles.imageWrap, soldOut && styles.soldOut]}>
         {item.image ? (
           <Image source={{ uri: item.image }} style={styles.image} contentFit="cover" transition={200} />
         ) : (
@@ -56,13 +67,15 @@ export function MenuItemRow({ item, qtyInCart, onPress, onAdd }: Props) {
             <Ionicons name="fast-food-outline" size={30} color={Colors.brand} />
           </View>
         )}
-        <Pressable
-          accessibilityLabel={`${item.name} hozzáadása`}
-          hitSlop={8}
-          onPress={onAdd}
-          style={({ pressed }) => [styles.add, pressed && styles.addPressed]}>
-          <Ionicons name="add" size={22} color={Colors.ink} />
-        </Pressable>
+        {soldOut ? null : (
+          <Pressable
+            accessibilityLabel={`${item.name} hozzáadása`}
+            hitSlop={8}
+            onPress={onAdd}
+            style={({ pressed }) => [styles.add, pressed && styles.addPressed]}>
+            <Ionicons name="add" size={22} color={Colors.ink} />
+          </Pressable>
+        )}
       </View>
     </Pressable>
   );
@@ -73,7 +86,7 @@ function Tag({
   label,
   color,
 }: {
-  icon: 'leaf' | 'flame' | 'star';
+  icon: 'leaf' | 'flame' | 'star' | 'close-circle';
   label: string;
   color: string;
 }) {
@@ -118,6 +131,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
   },
   imageWrap: { width: 104, height: 104 },
+  soldOut: { opacity: 0.4 },
   image: { width: 104, height: 104, borderRadius: Radius.md, backgroundColor: Colors.bgSoft },
   placeholder: { alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.brandSoft },
   add: {

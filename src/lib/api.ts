@@ -66,7 +66,7 @@ async function whileWaking<T>(fn: () => Promise<T>, maxWaitMs: number): Promise<
   }
 }
 
-export type LocationState = { id: string; paused: boolean; open: boolean };
+export type LocationState = { id: string; paused: boolean; open: boolean; soldOut?: string[] };
 
 export const api = {
   /** Felkelti az alvó szervert, amíg a vendég az étlapot nézi. */

@@ -25,12 +25,12 @@ import { T } from '@/components/ui/text';
 import { Colors, Radius, Shadow } from '@/constants/theme';
 import { RESTAURANT } from '@/data/locations';
 import { CATEGORIES, itemsInCategory, MENU } from '@/data/menu';
-import { formatPrice, formatRange, formatTime } from '@/lib/format';
+import { formatFee, formatPrice, formatRange, formatTime } from '@/lib/format';
 import { openStatus } from '@/lib/hours';
 import { isFinal, STEP_LABELS, stepIndex } from '@/lib/order-status';
 import { useNow } from '@/lib/use-now';
 import { openProduct, useQuickAdd } from '@/lib/use-quick-add';
-import { useRestaurantStatus } from '@/lib/use-restaurant-status';
+import { useRestaurantStatus, useSoldOut } from '@/lib/use-restaurant-status';
 import { useStatusBarStyle } from '@/lib/use-status-bar';
 import { deliveryZone, useApp } from '@/store/app-store';
 
@@ -57,6 +57,7 @@ export default function MenuScreen() {
   const zone = deliveryZone(location, address.town);
   const activeOrder = orders.find((o) => !isFinal(o.status));
   const restaurant = useRestaurantStatus(location.id);
+  const soldOut = useSoldOut();
 
   useEffect(() => {
     Animated.timing(headerAnim, {
@@ -178,7 +179,7 @@ export default function MenuScreen() {
             <View style={styles.statDivider} />
             {mode === 'delivery' ? (
               <>
-                <Stat icon="pricetag-outline" value={formatPrice(zone.fee)} label={`Díj · ${zone.town}`} />
+                <Stat icon="pricetag-outline" value={formatFee(zone.fee)} label={`Díj · ${zone.town}`} />
                 <View style={styles.statDivider} />
                 <Stat icon="basket-outline" value={formatPrice(location.minOrder)} label="Min. rendelés" />
               </>
@@ -263,7 +264,7 @@ export default function MenuScreen() {
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.popularList}>
-            {POPULAR.map((item) => (
+            {POPULAR.filter((item) => !soldOut.has(item.id)).map((item) => (
               <PopularCard
                 key={item.id}
                 item={item}
@@ -294,6 +295,7 @@ export default function MenuScreen() {
                 key={item.id}
                 item={item}
                 qtyInCart={qtyOf(item.id)}
+                soldOut={soldOut.has(item.id)}
                 onPress={() => openProduct(item)}
                 onAdd={() => quickAdd(item)}
               />

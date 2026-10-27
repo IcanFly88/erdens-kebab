@@ -11,15 +11,17 @@ import { T } from '@/components/ui/text';
 import { Colors, Fonts, Radius } from '@/constants/theme';
 import { CATEGORIES, itemsInCategory, searchMenu } from '@/data/menu';
 import { openProduct, useQuickAdd } from '@/lib/use-quick-add';
+import { useSoldOut } from '@/lib/use-restaurant-status';
 import { useStatusBarStyle } from '@/lib/use-status-bar';
 import { useApp } from '@/store/app-store';
 
-const SUGGESTIONS = ['Tál', 'Dürüm', 'Istanbul', 'Mix', 'Falafel', 'Nuggets', 'Rántott sajt'];
+const SUGGESTIONS = ['Tál', 'Dürüm', 'Istanbul', 'Falafel', 'Nuggets', 'Szósz', 'Baklava'];
 
 export default function SearchScreen() {
   const insets = useSafeAreaInsets();
   const { cart } = useApp();
   const quickAdd = useQuickAdd();
+  const soldOut = useSoldOut();
   const [query, setQuery] = useState('');
   const results = searchMenu(query);
 
@@ -63,6 +65,7 @@ export default function SearchScreen() {
               <MenuItemRow
                 item={item}
                 qtyInCart={qtyOf(item.id)}
+                soldOut={soldOut.has(item.id)}
                 onPress={() => openProduct(item)}
                 onAdd={() => quickAdd(item)}
               />

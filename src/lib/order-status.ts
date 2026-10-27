@@ -42,6 +42,8 @@ export type Order = {
   statusHistory: { status: OrderStatus; at: number }[];
   lines: OrderLine[];
   subtotal: number;
+  /** Csomagolási díj (régebbi rendeléseknél hiányzik). */
+  packagingFee?: number;
   deliveryFee: number;
   tip: number;
   total: number;

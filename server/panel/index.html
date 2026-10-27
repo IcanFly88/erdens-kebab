@@ -32,6 +32,11 @@
       <header class="topbar">
         <div class="brand">ERDEN'S KEBAB</div>
         <div class="location" id="location-name"></div>
+        <nav class="tabs" aria-label="Nézetek">
+          <button type="button" data-view="orders">Rendelések <span class="count" id="tab-new"></span></button>
+          <button type="button" data-view="menu">Étlap <span class="count warn" id="tab-soldout"></span></button>
+          <button type="button" data-view="stats">Kimutatás</button>
+        </nav>
         <div class="spacer"></div>
         <span class="conn" id="conn">Kapcsolódás…</span>
         <label class="switch">
@@ -50,25 +55,80 @@
         Nyitvatartási időn kívül vagyunk – csak előrendelések érkezhetnek.
       </div>
 
-      <main class="board">
-        <section class="column">
-          <h2>Új <span class="count" id="count-new"></span></h2>
-          <div id="col-new" class="cards"></div>
-        </section>
-        <section class="column">
-          <h2>Készül <span class="count" id="count-prep"></span></h2>
-          <div id="col-prep" class="cards"></div>
-        </section>
-        <section class="column">
-          <h2>Kiadva <span class="count" id="count-out"></span></h2>
-          <div id="col-out" class="cards"></div>
-        </section>
-      </main>
+      <div id="view-orders">
+        <main class="board">
+          <section class="column">
+            <h2>Új <span class="count" id="count-new"></span></h2>
+            <div id="col-new" class="cards"></div>
+          </section>
+          <section class="column">
+            <h2>Készül <span class="count" id="count-prep"></span></h2>
+            <div id="col-prep" class="cards"></div>
+          </section>
+          <section class="column">
+            <h2>Kiadva <span class="count" id="count-out"></span></h2>
+            <div id="col-out" class="cards"></div>
+          </section>
+        </main>
 
-      <details class="history">
-        <summary>Lezárt rendelések (utolsó 24 óra) <span id="count-done"></span></summary>
-        <div id="col-done" class="history-list"></div>
-      </details>
+        <details class="history">
+          <summary>Lezárt rendelések (utolsó 24 óra) <span id="count-done"></span></summary>
+          <div id="col-done" class="history-list"></div>
+        </details>
+      </div>
+
+      <section id="view-menu" class="view" hidden>
+        <div class="view-head">
+          <div>
+            <h2>Étlap – elérhetőség</h2>
+            <p class="muted" id="soldout-summary"></p>
+          </div>
+          <div class="spacer"></div>
+          <button class="btn outline" id="clear-soldout" type="button" hidden>Minden kapható</button>
+        </div>
+        <div id="menu-list" class="menu-grid"></div>
+      </section>
+
+      <section id="view-stats" class="view" hidden>
+        <div class="view-head">
+          <div>
+            <h2>Kimutatás – rendelések az appból</h2>
+            <p class="muted" id="stats-range"></p>
+          </div>
+          <div class="spacer"></div>
+          <div class="segmented" id="period" role="group" aria-label="Időszak">
+            <button type="button" data-period="today">Ma</button>
+            <button type="button" data-period="7d">7 nap</button>
+            <button type="button" data-period="30d">30 nap</button>
+          </div>
+          <button class="btn outline" id="export-btn" type="button">⬇ Táblázat (Excel)</button>
+        </div>
+        <div class="kpis" id="kpis"></div>
+        <div class="stats-grid">
+          <section class="panel-card wide" id="daily-card">
+            <h3>Rendelések naponta</h3>
+            <div class="chart" id="daily"></div>
+          </section>
+          <section class="panel-card">
+            <h3 id="hourly-title">Rendelések óránként</h3>
+            <div class="chart" id="hourly"></div>
+          </section>
+          <section class="panel-card">
+            <h3>Legtöbbet rendelt termékek</h3>
+            <ol class="bars" id="top-items"></ol>
+          </section>
+          <section class="panel-card">
+            <h3>Átvétel és fizetés</h3>
+            <ol class="bars" id="mix"></ol>
+          </section>
+        </div>
+        <p class="muted small">
+          Az elutasított rendelések nélkül számolva. Vendég = egyedi telefonszám; visszatérő, aki már
+          legalább kétszer rendelt. A táblázat név és telefonszám nélkül készül.
+          <strong>Demó:</strong> az ingyenes szerver újraindításkor törli a rendeléseket, ezért itt csak
+          az azóta beérkezettek látszanak – élesben tartós tárhellyel minden megmarad.
+        </p>
+      </section>
     </section>
 
     <dialog id="reject-dialog">
@@ -91,6 +151,7 @@
     </dialog>
 
     <div id="toast" class="toast" hidden></div>
+    <div id="print-area" aria-hidden="true"></div>
     <script src="panel.js"></script>
   </body>
 </html>

@@ -1,6 +1,7 @@
 // Étlap – a monori üzlet nyomtatott étlapja alapján (2026. október 27.).
 // Kebab Tál, Dürüm (tortilla), Pita: csirke / borjú ár (a borjú +500 Ft), Mix és Falafel fix áron.
 // A tálak ára tartalmazza a választható köretet (hasábburgonya vagy jázmin rizs) és 1 szószt.
+// Csomagolás (az étlap alján): tál 200 Ft, dürüm és pita 100 Ft – külön sorban számoljuk.
 // Ezt a fájlt az app és a szerver is használja: árváltozásnál elég itt módosítani.
 
 export type OptionChoice = { id: string; name: string; price?: number };
@@ -26,6 +27,8 @@ export type MenuItem = {
   popular?: boolean;
   tags?: ('vega' | 'csípős' | 'új')[];
   optionGroups?: string[];
+  /** Csomagolási díj darabonként (elvitelnél és kiszállításnál). */
+  packaging?: number;
 };
 
 /** groupId → kiválasztott choice id-k */
@@ -46,7 +49,17 @@ const IMAGES = {
   chiliCheese: img('1788600448499-0cc867441746'),
   strips: img('1768204039907-77a974159ef0'),
   friedCheese: img('1778850855907-8fbf7b089621'),
+  fries: img('1630384060421-cb20d0e0649d'),
+  rice: img('1705147271933-5c7052f15a90'),
+  sauces: img('1790000135231-c6638649d30a'),
+  garlic: img('1777199264017-84af9308a41f'),
+  baklavaPistachio: img('1761828122856-8703baac8e86'),
+  baklavaWalnut: img('1783199352933-1cbbc176eb0c'),
+  baklavaChoco: img('1777543236646-b36f83fef810'),
 };
+
+const PACKAGING_TAL = 200;
+const PACKAGING_WRAP = 100;
 
 const BEEF_SURCHARGE = 500;
 
@@ -77,12 +90,14 @@ export const OPTION_GROUPS: Record<string, OptionGroup> = {
     type: 'single',
     required: true,
     choices: [
-      { id: 'fokhagymas', name: 'Fokhagymás' },
-      { id: 'joghurtos', name: 'Joghurtos' },
+      { id: 'fokhagymas', name: 'Fokhagymás (alap)' },
       { id: 'csipos', name: 'Csípős' },
-      { id: 'ketchup', name: 'Ketchup' },
-      { id: 'majonez', name: 'Majonéz' },
-      { id: 'barbecue', name: 'Barbecue' },
+      { id: 'andalouse', name: 'Andalouse' },
+      { id: 'hannibal', name: 'Hannibal' },
+      { id: 'curry', name: 'Curry' },
+      { id: 'samurai', name: 'Samurai' },
+      { id: 'tartar', name: 'Tartár' },
+      { id: 'cheddar', name: 'Cheddar' },
     ],
   },
   remove: {
@@ -110,6 +125,9 @@ export const CATEGORIES: Category[] = [
     name: 'Ropogós Falatok',
     subtitle: 'Tálak köret (hasábburgonya vagy jázmin rizs) és 1 szósz árával',
   },
+  { id: 'koret', name: 'Köretek' },
+  { id: 'szosz', name: 'Szószok', subtitle: 'Extra szósz külön adagban' },
+  { id: 'baklava', name: 'Baklava' },
 ];
 
 /** Egy étlapsor: a `price` a csirkés ár (Mix és Falafel esetén a fix ár). */
@@ -120,7 +138,7 @@ function kebabItems(
   label: string,
   rows: Row[],
   images: [string, string],
-  options: { withSide?: boolean; popular?: string[] } = {},
+  options: { withSide?: boolean; popular?: string[]; packaging: number },
 ): MenuItem[] {
   return rows.map((r, i) => {
     const filling =
@@ -140,6 +158,7 @@ function kebabItems(
       image: r.fixed === 'falafel' ? IMAGES.falafel : images[i % 2],
       popular: options.popular?.includes(r.key),
       tags: r.fixed === 'falafel' ? ['vega'] : undefined,
+      packaging: options.packaging,
       optionGroups: [
         ...(r.fixed ? [] : ['meat']),
         ...(options.withSide ? ['side'] : []),
@@ -149,6 +168,28 @@ function kebabItems(
     };
   });
 }
+
+/** Külön rendelhető szószok – a leírás az étlapról. */
+const SAUCES = [
+  { id: 'fokhagymas', name: 'Fokhagymás szósz', description: 'A ház alapszósza.', price: 380 },
+  { id: 'csipos', name: 'Csípős szósz', description: '', price: 380, hot: true },
+  {
+    id: 'andalouse',
+    name: 'Andalouse szósz',
+    description: 'Enyhén pikáns, paradicsomos-paprikás majonéz.',
+    price: 380,
+  },
+  {
+    id: 'hannibal',
+    name: 'Hannibal szósz',
+    description: 'Édeskés majonéz pirított hagymadarabokkal.',
+    price: 380,
+  },
+  { id: 'curry', name: 'Curry szósz', description: 'Kellemesen fűszeres, édeskés curry ízvilág.', price: 380 },
+  { id: 'samurai', name: 'Samurai szósz', description: 'Csípős, chilis majonéz.', price: 380, hot: true },
+  { id: 'tartar', name: 'Tartármártás', description: 'Klasszikus majonézmártás.', price: 380 },
+  { id: 'cheddar', name: 'Cheddar sajtszósz', description: 'Meleg sajtszósz.', price: 480 },
+];
 
 export const MENU: MenuItem[] = [
   ...kebabItems(
@@ -163,7 +204,7 @@ export const MENU: MenuItem[] = [
       { key: 'falafel', name: 'Falafel', price: 3280, fixed: 'falafel' },
     ],
     [IMAGES.tal, IMAGES.talMix],
-    { withSide: true, popular: ['sima', 'istanbul'] },
+    { withSide: true, popular: ['sima', 'istanbul'], packaging: PACKAGING_TAL },
   ),
   ...kebabItems(
     'durum',
@@ -171,13 +212,13 @@ export const MENU: MenuItem[] = [
     [
       { key: 'sima', name: 'Sima', price: 2480 },
       { key: 'feta', name: 'Feta', price: 2880, extra: 'feta' },
-      { key: 'antalya', name: 'Antalya', price: 2680, extra: 'ananász, kukorica' },
+      { key: 'antalya', name: 'Antalya', price: 2880, extra: 'ananász, kukorica' },
       { key: 'istanbul', name: 'Istanbul', price: 3280, extra: 'paprika, kukorica, feta' },
       { key: 'mix', name: 'Mix', price: 2880, fixed: 'mix' },
       { key: 'falafel', name: 'Falafel', price: 2380, fixed: 'falafel' },
     ],
     [IMAGES.durum, IMAGES.durumFries],
-    { popular: ['feta'] },
+    { popular: ['feta'], packaging: PACKAGING_WRAP },
   ),
   ...kebabItems(
     'pita',
@@ -191,7 +232,7 @@ export const MENU: MenuItem[] = [
       { key: 'falafel', name: 'Falafel', price: 2280, fixed: 'falafel' },
     ],
     [IMAGES.pita, IMAGES.pitaFeta],
-    { popular: ['sima'] },
+    { popular: ['sima'], packaging: PACKAGING_WRAP },
   ),
   {
     id: 'ropogos-nuggets',
@@ -202,6 +243,7 @@ export const MENU: MenuItem[] = [
     image: IMAGES.nuggets,
     popular: true,
     optionGroups: ['side', 'sauce'],
+    packaging: PACKAGING_TAL,
   },
   {
     id: 'ropogos-chili-cheese',
@@ -212,6 +254,7 @@ export const MENU: MenuItem[] = [
     image: IMAGES.chiliCheese,
     tags: ['csípős'],
     optionGroups: ['side', 'sauce'],
+    packaging: PACKAGING_TAL,
   },
   {
     id: 'ropogos-csirkemell',
@@ -221,6 +264,7 @@ export const MENU: MenuItem[] = [
     price: 2980,
     image: IMAGES.strips,
     optionGroups: ['side', 'sauce'],
+    packaging: PACKAGING_TAL,
   },
   {
     id: 'ropogos-sajt',
@@ -230,6 +274,60 @@ export const MENU: MenuItem[] = [
     price: 2680,
     image: IMAGES.friedCheese,
     optionGroups: ['side', 'sauce'],
+    packaging: PACKAGING_TAL,
+  },
+  {
+    id: 'koret-hasab',
+    categoryId: 'koret',
+    name: 'Hasábburgonya',
+    description: 'Egy adag ropogós hasábburgonya.',
+    price: 1180,
+    image: IMAGES.fries,
+    tags: ['vega'],
+  },
+  {
+    id: 'koret-rizs',
+    categoryId: 'koret',
+    name: 'Jázmin rizs',
+    description: 'Egy adag párolt jázmin rizs.',
+    price: 1180,
+    image: IMAGES.rice,
+    tags: ['vega'],
+  },
+  ...SAUCES.map(
+    (s): MenuItem => ({
+      id: `szosz-${s.id}`,
+      categoryId: 'szosz',
+      name: s.name,
+      description: s.description,
+      price: s.price,
+      image: s.id === 'fokhagymas' ? IMAGES.garlic : IMAGES.sauces,
+      tags: s.hot ? ['csípős'] : undefined,
+    }),
+  ),
+  {
+    id: 'baklava-pisztacia',
+    categoryId: 'baklava',
+    name: 'Pisztáciás baklava',
+    description: 'Ropogós leveles tészta, pisztácia, szirup.',
+    price: 680,
+    image: IMAGES.baklavaPistachio,
+  },
+  {
+    id: 'baklava-dios',
+    categoryId: 'baklava',
+    name: 'Diós baklava',
+    description: 'Ropogós leveles tészta, dió, szirup.',
+    price: 580,
+    image: IMAGES.baklavaWalnut,
+  },
+  {
+    id: 'baklava-csokis',
+    categoryId: 'baklava',
+    name: 'Csokis baklava',
+    description: 'Ropogós leveles tészta csokoládéval.',
+    price: 580,
+    image: IMAGES.baklavaChoco,
   },
 ];
 
@@ -270,6 +368,11 @@ export function describeSelections(item: MenuItem, selections: Selections): stri
 
 export function missingRequired(item: MenuItem, selections: Selections): OptionGroup | undefined {
   return groupsFor(item).find((g) => g.required && !(selections[g.id]?.length));
+}
+
+/** A csomagolási díj összesen (tál 200 Ft, dürüm és pita 100 Ft darabonként). */
+export function packagingFor(lines: { itemId: string; qty: number }[]): number {
+  return lines.reduce((sum, l) => sum + (getItem(l.itemId)?.packaging ?? 0) * l.qty, 0);
 }
 
 /** Csak az étlapon ma is létező opciókat tartja meg (pl. régebbi kosárból vagy rendelésből). */

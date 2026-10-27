@@ -6,7 +6,8 @@ A rendszer több üzletet is tud kezelni: új üzlethez elég egy újabb elem a 
 
 - **Mobil app** (iOS + Android, Expo SDK 58 / React Native) – a vendégeknek
 - **Backend** (`server/`, Node.js + SQLite, külső függőség nélkül) – rendelések fogadása, árak ellenőrzése
-- **Éttermi panel** (`server/panel/`, böngészőben/tableten fut) – bejövő rendelések kezelése
+- **Éttermi panel** (`server/panel/`, böngészőben/tableten fut) – bejövő rendelések, elfogyott
+  termékek, kimutatás az app rendeléseiről, konyhai blokk nyomtatása
 - **Push értesítések** – a vendég értesítést kap minden státuszváltásról
 
 ## Demó (jelenlegi állapot)
@@ -89,6 +90,14 @@ Az app fejlesztéskor automatikusan a Metro-t futtató gép 4000-es portján ker
    Az app szándékosan nem kezel online fizetést.
 7. A panelről a **rendelésfogadás szüneteltethető** (pl. csúcsidőben) – ilyenkor az app jelzi, és nem enged rendelni.
 
+## Éttermi panel
+
+| Fül | Mire való |
+| --- | --- |
+| **Rendelések** | Új / Készül / Kiadva oszlopok. Késésben lévő rendelés pirosan, 3 percnél tovább váró új rendelés figyelmeztetéssel. 🖨 gomb: 80 mm-es konyhai blokk (bármilyen nyomtatóra is megy). |
+| **Étlap** | Termékenként „Kapható / Elfogyott” kapcsoló. Az elfogyott termék az appban szürke, nem tehető kosárba, és a szerver sem fogadja el. |
+| **Kimutatás** | Ma / 7 nap / 30 nap: forgalom, rendelések száma, vendégek (egyedi telefonszám), visszatérő vendégek, átlagos kosár és elfogadási idő, napi és óránkénti bontás, top termékek, átvétel és fizetési mód. ⬇ gombbal Excelben megnyitható táblázat (név és telefonszám nélkül). |
+
 ## Push értesítések
 
 | Környezet | Mi működik |
@@ -151,16 +160,17 @@ Nyisd meg a `https://<szerver>/panel/` címet a pult melletti tableten, lépj be
 
 ## Amit élesítés előtt egyeztetni kell az étteremmel
 
-Az étlap és az árak a monori üzlet nyomtatott étlapjáról származnak (2026. október 27.). Egyéb adatok:
-erdenskebap.hu (színek), @erdenskebab TikTok (cím), online cégjegyzékek (telefonszám, nyitvatartás).
+Az étlap, a szószok, a köretek, a baklava, a csomagolási díj (tál 200 Ft, dürüm/pita 100 Ft), a
+szállítási zónák és díjak (Monoron ingyenes, a környékre 800 Ft), a nyitvatartás és a telefonszám a
+monori üzlet nyomtatott étlapjáról és szórólapjáról származnak (2026. október 27.).
 Még egyeztetni kell:
 
 | Mit | Hol | Állapot |
 | --- | --- | --- |
-| Italok, külön köretek és szószok | `src/data/menu.ts` | nincsenek az étlapon – ha árulják, fel kell venni |
-| Szószválaszték | `src/data/menu.ts` | a weboldal listája alapján, ellenőrizni kell |
-| Szállítási díjak, zónák, minimum | `src/data/locations.ts` | becsült |
-| Nyitvatartás | `src/data/locations.ts` | cégjegyzékből, ellenőrizni kell |
+| Italok | `src/data/menu.ts` | nincsenek az étlapon – ha árulják, fel kell venni |
+| Cheddar szósz a tálakhoz/dürümhöz | `src/data/menu.ts` | most felár nélkül választható (külön 480 Ft) |
+| Minimális rendelési érték | `src/data/locations.ts` | nincs a szórólapon, most 3000 Ft |
+| Szállítási idők | `src/data/locations.ts` | becsült |
 | Ételfotók | Unsplash (ingyenes licenc) | cserélendő saját fotókra |
 | Logó | „EK” monogram (`assets/images`) | cserélendő a hivatalos logóra |
 
@@ -169,7 +179,6 @@ egy helyen módosítani – utána a szerver a GitHub-push után magától újra
 
 ## Még nincs benne
 
-- Termékek elérhetőségének kapcsolása a panelről („elfogyott”)
 - Futár-követés térképen
 - Vendégfiók / bejelentkezés (a rendeléseket most a telefon tárolja)
 

@@ -14,7 +14,7 @@ import { Field } from '@/components/ui/field';
 import { Segmented } from '@/components/ui/segmented';
 import { T } from '@/components/ui/text';
 import { Colors, Radius } from '@/constants/theme';
-import { formatDay, formatPrice, formatRange, formatTime } from '@/lib/format';
+import { formatDay, formatFee, formatPrice, formatRange, formatTime } from '@/lib/format';
 import { closingTime, isOpenAt, scheduleSlots } from '@/lib/hours';
 import { api } from '@/lib/api';
 import { PAYMENT_LABELS, type PaymentMethod } from '@/lib/order-status';
@@ -33,7 +33,7 @@ const PAYMENTS: { id: PaymentMethod; icon: 'cash-outline' | 'card-outline' | 'wa
 export default function CheckoutScreen() {
   const insets = useSafeAreaInsets();
   const app = useApp();
-  const { location, mode, cart, subtotal, dispatch } = app;
+  const { location, mode, cart, subtotal, packaging, dispatch } = app;
   const now = useNow();
   useStatusBarStyle('dark');
 
@@ -62,7 +62,7 @@ export default function CheckoutScreen() {
 
   const deliveryFee = mode === 'delivery' ? zone.fee : 0;
   const tipAmount = mode === 'delivery' ? tip : 0;
-  const total = subtotal + deliveryFee + tipAmount;
+  const total = subtotal + packaging + deliveryFee + tipAmount;
 
   const errors = {
     street: mode === 'delivery' && !address.street.trim() ? 'Add meg az utcát és a házszámot.' : null,
@@ -318,9 +318,10 @@ export default function CheckoutScreen() {
             label={`Részösszeg (${cart.reduce((n, l) => n + l.qty, 0)} tétel)`}
             value={formatPrice(subtotal)}
           />
+          {packaging ? <SummaryRow label="Csomagolás" value={formatPrice(packaging)} /> : null}
           {mode === 'delivery' ? (
             <>
-              <SummaryRow label={`Szállítási díj (${zone.town})`} value={formatPrice(deliveryFee)} />
+              <SummaryRow label={`Szállítási díj (${zone.town})`} value={formatFee(deliveryFee)} />
               {tipAmount ? <SummaryRow label="Borravaló" value={formatPrice(tipAmount)} /> : null}
             </>
           ) : null}

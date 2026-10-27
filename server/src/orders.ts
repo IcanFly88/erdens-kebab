@@ -6,6 +6,7 @@ import {
   getItem,
   groupsFor,
   missingRequired,
+  packagingFor,
   unitPrice,
 } from '../../src/data/menu.ts';
 import type { NewOrderRequest, OrderLine, PaymentMethod } from '../../src/lib/order-status.ts';
@@ -40,7 +41,7 @@ function int(value: unknown, min: number, max: number, field: string): number {
  */
 export function buildOrder(
   raw: unknown,
-  opts: { now: number; paused: boolean; sequence: number },
+  opts: { now: number; paused: boolean; soldOut: string[]; sequence: number },
 ): StoredOrder {
   if (!raw || typeof raw !== 'object') throw new ValidationError('Hibás kérés');
   const req = raw as Partial<NewOrderRequest>;
@@ -59,6 +60,9 @@ export function buildOrder(
   const lines: OrderLine[] = req.lines.map((l, i) => {
     const item = getItem(l?.itemId);
     if (!item) throw new ValidationError(`Ismeretlen termék (${i + 1}. tétel)`);
+    if (opts.soldOut.includes(item.id)) {
+      throw new ValidationError(`Elfogyott: ${item.name}. Vedd ki a kosárból, vagy válassz helyette mást.`);
+    }
     const qty = int(l.qty, 1, 50, 'mennyiség');
     const selections: Record<string, string[]> = {};
     const given = (l.selections && typeof l.selections === 'object' ? l.selections : {}) as Record<
@@ -121,6 +125,7 @@ export function buildOrder(
   const tip = mode === 'delivery' ? int(req.tip ?? 0, 0, 5000, 'borravaló') : 0;
 
   const subtotal = lines.reduce((sum, l) => sum + l.unitPrice * l.qty, 0);
+  const packagingFee = packagingFor(lines);
   if (mode === 'delivery' && subtotal < location.minOrder) {
     throw new ValidationError(`A minimális rendelési érték kiszállításnál ${location.minOrder} Ft`);
   }
@@ -148,9 +153,10 @@ export function buildOrder(
     statusHistory: [{ status: 'pending', at: now }],
     lines,
     subtotal,
+    packagingFee,
     deliveryFee,
     tip,
-    total: subtotal + deliveryFee + tip,
+    total: subtotal + packagingFee + deliveryFee + tip,
     payment: req.payment as PaymentMethod,
     cutlery,
     contact,

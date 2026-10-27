@@ -2,7 +2,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, use, useEffect, useReducer, type ReactNode } from 'react';
 
 import { getLocation, LOCATIONS, type Location, type LocationId } from '@/data/locations';
-import { getItem, sanitizeSelections, unitPrice, type Selections } from '@/data/menu';
+import {
+  getItem,
+  missingRequired,
+  packagingFor,
+  sanitizeSelections,
+  unitPrice,
+  type Selections,
+} from '@/data/menu';
 import { newId } from '@/lib/format';
 import type { Address, Mode, Order } from '@/lib/order-status';
 
@@ -83,10 +90,13 @@ function reducer(state: State, action: Action): State {
       const locationId = saved && isLocationId(saved) ? saved : LOCATIONS[0].id;
       const zones = getLocation(locationId).deliveryZones;
       const address = action.state.address ?? state.address;
-      // Az étlap változhat: a már nem létező tételeket és opciókat kivesszük a mentett kosárból.
+      // Az étlap változhat: a már nem létező tételeket és opciókat kivesszük a mentett kosárból
+      // (ha emiatt egy kötelező választás – pl. a szósz – hiányozna, a tételt is).
       const cart = (action.state.cart ?? []).flatMap((l) => {
         const item = getItem(l.itemId);
-        return item ? [{ ...l, selections: sanitizeSelections(item, l.selections) }] : [];
+        if (!item) return [];
+        const selections = sanitizeSelections(item, l.selections);
+        return missingRequired(item, selections) ? [] : [{ ...l, selections }];
       });
       return {
         ...state,
@@ -137,12 +147,9 @@ function reducer(state: State, action: Action): State {
         cart: order.lines.reduce((cart, l) => {
           const item = getItem(l.itemId);
           if (!item) return cart;
-          return addOrMerge(cart, {
-            itemId: l.itemId,
-            qty: l.qty,
-            selections: sanitizeSelections(item, l.selections),
-            note: l.note,
-          });
+          const selections = sanitizeSelections(item, l.selections);
+          if (missingRequired(item, selections)) return cart;
+          return addOrMerge(cart, { itemId: l.itemId, qty: l.qty, selections, note: l.note });
         }, state.cart),
       };
     }
@@ -157,6 +164,8 @@ type AppContextValue = State & {
   location: Location;
   cartCount: number;
   subtotal: number;
+  /** Csomagolási díj a kosár tételei után. */
+  packaging: number;
   dispatch: (action: Action) => void;
 };
 
@@ -188,6 +197,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     location: getLocation(state.locationId),
     cartCount,
     subtotal,
+    packaging: packagingFor(state.cart),
     dispatch,
   };
 

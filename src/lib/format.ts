@@ -26,6 +26,11 @@ export function formatPrice(value: number): string {
   return `${sign}${digits} Ft`;
 }
 
+/** Szállítási díj: 0 Ft helyett "ingyenes". */
+export function formatFee(value: number): string {
+  return value === 0 ? 'ingyenes' : formatPrice(value);
+}
+
 export function formatTime(ts: number | Date): string {
   const d = new Date(ts);
   return `${pad(d.getHours())}:${pad(d.getMinutes())}`;

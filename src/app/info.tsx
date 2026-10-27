@@ -7,7 +7,7 @@ import { Card, Divider } from '@/components/ui/card';
 import { T } from '@/components/ui/text';
 import { Colors } from '@/constants/theme';
 import { LOCATIONS, RESTAURANT } from '@/data/locations';
-import { DAY_NAMES, formatPrice, formatRange } from '@/lib/format';
+import { DAY_NAMES, formatFee, formatPrice, formatRange } from '@/lib/format';
 import { hoursLabel, openStatus } from '@/lib/hours';
 import { useNow } from '@/lib/use-now';
 import { useStatusBarStyle } from '@/lib/use-status-bar';
@@ -30,7 +30,8 @@ export default function InfoScreen() {
         </T>
         <T color={Colors.textMuted}>
           Török kebab Monoron: kebab tál, dürüm és pita – csirke- vagy borjúhússal,
-          illetve falafellel.
+          illetve falafellel. Mellé ropogós falatok, nyolcféle szósz és baklava. Monoron a
+          kiszállítás ingyenes.
         </T>
       </View>
 
@@ -92,7 +93,7 @@ export default function InfoScreen() {
                 {z.town}
               </T>
               <T variant="small" color={Colors.textMuted}>
-                {formatPrice(z.fee)} · {formatRange(z.eta)}
+                {formatFee(z.fee)} · {formatRange(z.eta)}
               </T>
             </View>
           ))}

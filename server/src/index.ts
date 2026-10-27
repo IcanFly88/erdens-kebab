@@ -5,10 +5,12 @@ import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { getLocation, LOCATIONS } from '../../src/data/locations.ts';
+import { CATEGORIES, getItem, itemsInCategory } from '../../src/data/menu.ts';
 import { isFinal, nextStatuses, type OrderStatus } from '../../src/lib/order-status.ts';
 import { broadcast, subscribe } from './events.ts';
 import { buildOrder, nextSequence, ValidationError } from './orders.ts';
 import { notifyCustomer } from './push.ts';
+import { computeStats, ordersCsv, periodStart, PERIODS, type Period } from './stats.ts';
 import { createStore, publicOrder, type StoredOrder } from './store.ts';
 import { isOpenAt } from './time.ts';
 
@@ -116,8 +118,16 @@ function locationStatus(now: number) {
     id: l.id,
     paused: store.isPaused(l.id),
     open: isOpenAt(l, now),
+    soldOut: store.soldOut(l.id),
   }));
 }
+
+/** A panel "Étlap" nézetéhez: kategóriák és termékek, ár szerint. */
+const PANEL_MENU = CATEGORIES.map((c) => ({
+  id: c.id,
+  name: c.name,
+  items: itemsInCategory(c.id).map(({ id, name, price }) => ({ id, name, price })),
+}));
 
 // --- útvonalak -------------------------------------------------------------------------------
 
@@ -138,6 +148,7 @@ async function handleApi(req: IncomingMessage, res: ServerResponse, url: URL) {
     const order = buildOrder(body, {
       now,
       paused: store.isPaused(locationId),
+      soldOut: store.soldOut(locationId),
       sequence: nextSequence(store.ordersSince(locationId, now - 36 * 3600_000), now),
     });
     store.insertOrder(order);
@@ -189,6 +200,8 @@ async function handleApi(req: IncomingMessage, res: ServerResponse, url: URL) {
       location: getLocation(locationId),
       paused: store.isPaused(locationId),
       open: isOpenAt(getLocation(locationId), now),
+      soldOut: store.soldOut(locationId),
+      menu: PANEL_MENU,
       orders: store.panelOrders(locationId, now).map(publicOrder),
     });
   }
@@ -197,6 +210,38 @@ async function handleApi(req: IncomingMessage, res: ServerResponse, url: URL) {
     store.setPaused(locationId, paused === true);
     broadcast(locationId, 'settings', { paused: paused === true });
     return send(res, 200, { paused: paused === true });
+  }
+  if (method === 'GET' && (url.pathname === '/api/panel/stats' || url.pathname === '/api/panel/export')) {
+    const period = url.searchParams.get('period') ?? 'today';
+    if (!(period in PERIODS)) throw new HttpError(400, 'Hibás időszak');
+    const now = Date.now();
+    if (url.pathname === '/api/panel/export') {
+      const from = periodStart(now, PERIODS[period as Period]);
+      res.writeHead(200, {
+        'content-type': 'text/csv; charset=utf-8',
+        'content-disposition': `attachment; filename="erdens-rendelesek-${period}.csv"`,
+        'cache-control': 'no-store',
+      });
+      return void res.end(ordersCsv(store.ordersSince(locationId, from - 1)));
+    }
+    // Egy évre visszamenőleg nézzük, ki rendelt már korábban is (visszatérő vendég).
+    const history = store.ordersSince(locationId, now - 365 * 24 * 3600_000);
+    return send(res, 200, computeStats(history, now, period as Period));
+  }
+  if (method === 'POST' && url.pathname === '/api/panel/sold-out') {
+    const body = (await readJson(req)) as { itemId?: unknown; soldOut?: unknown; clear?: unknown };
+    let soldOut: string[];
+    if (body.clear === true) {
+      soldOut = [];
+    } else {
+      const item = getItem(typeof body.itemId === 'string' ? body.itemId : undefined);
+      if (!item) throw new HttpError(400, 'Ismeretlen termék');
+      const rest = store.soldOut(locationId).filter((id) => id !== item.id);
+      soldOut = body.soldOut === true ? [...rest, item.id] : rest;
+    }
+    store.setSoldOut(locationId, soldOut);
+    broadcast(locationId, 'settings', { soldOut });
+    return send(res, 200, { soldOut });
   }
 
   if (parts[2] === 'orders' && parts[3] && method === 'POST') {

@@ -14,24 +14,28 @@ import { Stepper } from '@/components/ui/stepper';
 import { T } from '@/components/ui/text';
 import { Colors, Radius } from '@/constants/theme';
 import { describeSelections, getItem, unitPrice } from '@/data/menu';
-import { formatPrice } from '@/lib/format';
+import { formatFee, formatPrice } from '@/lib/format';
 import { openProduct, useQuickAdd } from '@/lib/use-quick-add';
+import { useSoldOut } from '@/lib/use-restaurant-status';
 import { useStatusBarStyle } from '@/lib/use-status-bar';
 import { deliveryZone, useApp } from '@/store/app-store';
 
-const UPSELL_IDS = ['ropogos-nuggets', 'ropogos-sajt', 'ropogos-chili-cheese', 'pita-falafel'];
+const UPSELL_IDS = ['baklava-pisztacia', 'koret-hasab', 'szosz-cheddar', 'baklava-dios', 'ropogos-nuggets'];
 
 export default function CartScreen() {
   const insets = useSafeAreaInsets();
-  const { cart, location, mode, address, subtotal, dispatch } = useApp();
+  const { cart, location, mode, address, subtotal, packaging, dispatch } = useApp();
   const quickAdd = useQuickAdd();
+  const soldOut = useSoldOut();
   useStatusBarStyle('dark');
 
   const zone = deliveryZone(location, address.town);
   const deliveryFee = mode === 'delivery' ? zone.fee : 0;
+  const total = subtotal + packaging + deliveryFee;
   const missingForMin = mode === 'delivery' ? Math.max(location.minOrder - subtotal, 0) : 0;
+  const hasSoldOut = cart.some((l) => soldOut.has(l.itemId));
   const upsell = UPSELL_IDS.map(getItem).filter(
-    (item) => item && !cart.some((l) => l.itemId === item.id),
+    (item) => item && !soldOut.has(item.id) && !cart.some((l) => l.itemId === item.id),
   ) as NonNullable<ReturnType<typeof getItem>>[];
 
   const confirmClear = () =>
@@ -130,6 +134,11 @@ export default function CartScreen() {
                     <T variant="smallStrong" style={styles.linePrice}>
                       {formatPrice(unitPrice(item, line.selections) * line.qty)}
                     </T>
+                    {soldOut.has(item.id) ? (
+                      <T variant="smallStrong" color={Colors.danger}>
+                        Elfogyott – vedd ki a kosárból
+                      </T>
+                    ) : null}
                   </Pressable>
                   <Stepper
                     size="sm"
@@ -175,13 +184,14 @@ export default function CartScreen() {
 
         <Card title="Összesítő">
           <SummaryRow label="Részösszeg" value={formatPrice(subtotal)} />
+          {packaging ? <SummaryRow label="Csomagolás" value={formatPrice(packaging)} /> : null}
           {mode === 'delivery' ? (
-            <SummaryRow label={`Szállítási díj (${zone.town})`} value={formatPrice(deliveryFee)} />
+            <SummaryRow label={`Szállítási díj (${zone.town})`} value={formatFee(deliveryFee)} />
           ) : (
             <SummaryRow label="Elvitel az étteremből" value="ingyenes" />
           )}
           <Divider />
-          <SummaryRow label="Összesen" value={formatPrice(subtotal + deliveryFee)} strong />
+          <SummaryRow label="Összesen" value={formatPrice(total)} strong />
         </Card>
 
         {missingForMin > 0 ? (
@@ -197,9 +207,9 @@ export default function CartScreen() {
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + 12 }]}>
         <Button
-          title="Tovább a pénztárhoz"
-          trailing={formatPrice(subtotal + deliveryFee)}
-          disabled={missingForMin > 0}
+          title={hasSoldOut ? 'Vedd ki az elfogyott tételt' : 'Tovább a pénztárhoz'}
+          trailing={formatPrice(total)}
+          disabled={missingForMin > 0 || hasSoldOut}
           onPress={() => router.push('/checkout')}
         />
       </View>
